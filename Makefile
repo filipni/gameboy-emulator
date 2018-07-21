@@ -3,7 +3,7 @@ CC=gcc
 gboy_emu: main.o
 	$(CC) $< -o $@
 
-main.o: main.c
+main.o: main.c constants.h
 	$(CC) -c $< -o $@
 
 .PHONY: clean, run
