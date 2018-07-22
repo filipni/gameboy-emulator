@@ -13,10 +13,10 @@ OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 $(BDIR)/gboy_emu: $(OBJ) 
 	$(CC) $^ -o $@
 
-$(ODIR)/main.o: $(SDIR)/main.c
+$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/constants.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(ODIR)/processor.o: $(SDIR)/processor.c
+$(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean, run

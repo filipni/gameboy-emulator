@@ -4,7 +4,7 @@
 
 int main(int argc, char* argv[])
 {
-  processor cpu;
-  LD(&cpu.AF.r8.high, 8);
-  printf("Value in reg A: %d\n", cpu.AF.r8.high);
+  proc p;
+  LD_imm(&p.AF.r8.high, 8);
+  printf("Value in reg A: %d\n", p.AF.r8.high);
 }
