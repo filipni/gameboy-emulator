@@ -1,18 +1,28 @@
 CC=gcc
 
-gboy_emu: main.o processor.o
+SDIR=./src
+BDIR=./bin
+
+CFLAGS=-I$(IDIR)
+IDIR=./include
+
+ODIR=./obj
+_OBJ= main.o processor.o
+OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ)) 
+
+$(BDIR)/gboy_emu: $(OBJ) 
 	$(CC) $^ -o $@
 
-main.o: main.c constants.h processor.h
-	$(CC) -c $< -o $@
+$(ODIR)/main.o: $(SDIR)/main.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-processor.o: processor.c processor.h
-	$(CC) -c $< -o $@
+$(ODIR)/processor.o: $(SDIR)/processor.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean, run
 
 clean:
-	@$(RM) *.o gboy_emu 
+	@$(RM) $(OBJ)/*.o $(BDIR)/gboy_emu 
 
-run:	gboy_emu
-	@./gboy_emu
+run: $(BDIR)/gboy_emu
+	@$(BDIR)/gboy_emu
