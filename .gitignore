@@ -3,3 +3,6 @@
 
 # ignore binary
 gboy_emu
+
+# ignore vim state files
+*.swp
