@@ -1,6 +1,6 @@
 #include "processor.h"
 
-int not_implemented(proc p) { return -1; }
+int not_implemented(proc* p) { return -1; }
 
 int LD_imm(uint8_t* nn, uint8_t n)
 {
@@ -14,10 +14,10 @@ int LD_reg(uint8_t* r1, uint8_t* r2)
   return 4;
 }
 
-int NOP(proc p) { return 4; }
+int NOP(proc* p) { p->pc++; return 4; }
 
 op operations[NUM_OPS] = { 
-  not_implemented, // 0x00
+  NOP, // 0x00
   not_implemented, // 0x01
   not_implemented, // 0x02
   not_implemented, // 0x03
