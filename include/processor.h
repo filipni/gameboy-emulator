@@ -15,12 +15,12 @@ typedef union {
 } reg;
 
 typedef struct {
-  reg AF;
-  reg BC;
-  reg DE;
-  reg HL;
-  uint16_t SP;
-  uint16_t PC;
+  reg af;
+  reg bc;
+  reg de;
+  reg hl;
+  uint16_t sp;
+  uint16_t pc;
 } proc;
 
 typedef int (*op) (proc);
