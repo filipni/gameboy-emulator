@@ -2,9 +2,25 @@
 #include "constants.h"
 #include "processor.h"
 
+#define ROM_FILE "roms/tetris.gb"
+#define ROM_SIZE 32768
+
 int main(int argc, char* argv[])
 {
+  char memory[MEMORY_SIZE];
+
+  FILE* fp;
+  fp = fopen(ROM_FILE, "rb");
+  fread(memory, ROM_SIZE, 1, fp);
+  fclose(fp);
+
   proc p;
-  LD_imm(&p.AF.r8.high, 8);
-  printf("Value in reg A: %d\n", p.AF.r8.high);
+  p.pc = 0;
+
+  // main loop
+  while (1)
+  {
+  }
+
+  return 0;
 }
