@@ -275,3 +275,8 @@ op operations[NUM_OPS] = {
   not_implemented, // 0xff
 };
 
+int run_operation(proc* p, uint8_t op)
+{
+  return operations[op](p); 
+}
+

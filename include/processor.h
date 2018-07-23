@@ -25,11 +25,13 @@ typedef struct {
 
 typedef int (*op) (proc*);
 
+int run_operation(proc*, uint8_t); 
+
 int LD_imm(uint8_t*, uint8_t);
 int LD_reg(uint8_t*, uint8_t*);
 
-int NOP(proc* p);
-int not_implemented(proc* p);
+int NOP(proc*);
+int not_implemented(proc*);
 
 #endif
 

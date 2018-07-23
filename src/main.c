@@ -20,6 +20,12 @@ int main(int argc, char* argv[])
   // main loop
   while (1)
   {
+    int res = run_operation(&p, memory[p.pc]); 
+    if (res < 0)
+    {
+      printf("Unrecognized op: %x\n", (uint8_t) memory[p.pc]);
+      return -1;
+    }
   }
 
   return 0;
