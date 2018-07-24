@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "constants.h"
 #include "processor.h"
 #include "utils.h"
@@ -15,8 +16,7 @@ int main(int argc, char* argv[])
   fread(memory, ROM_SIZE, 1, fp);
   fclose(fp);
 
-  proc p;
-  p.pc = 0;
+  proc p = {0};
   p.mem = memory;
 
   // main loop
