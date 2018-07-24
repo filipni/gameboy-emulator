@@ -28,6 +28,29 @@ int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
   return 4;
 }
 
+int LD_d16(proc* p, reg* r)
+{
+  r->r8.low = p->mem[p->pc+1]; 
+  r->r8.high = p->mem[p->pc+2]; 
+
+  p->pc += 3;
+  return 12;
+}
+
+int LD_BC(proc* p) { return LD_d16(p, &p->bc); }
+int LD_DE(proc* p) { return LD_d16(p, &p->de); }
+int LD_HL(proc* p) { return LD_d16(p, &p->hl); }
+int LD_SP(proc* p) 
+{ 
+  uint8_t low = p->mem[p->pc+1]; 
+  uint8_t high = p->mem[p->pc+2]; 
+  
+  p->sp = generate_address(low, high);
+
+  p->pc += 3;
+  return 12;
+}
+
 int LD_B_B(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.high); }
 int LD_B_C(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.low); }
 int LD_B_D(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.high); }
@@ -82,15 +105,6 @@ int LD_L_L(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.low); }
 // LD_EHL
 int LD_L_A(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->af.r8.high); }
 
-int LD_HL(proc* p)
-{
-  p->hl.r8.low = p->mem[p->pc+1]; 
-  p->hl.r8.high = p->mem[p->pc+2]; 
-
-  p->pc += 3;
-  return 12;
-}
-
 int NOP(proc* p) { p->pc++; return 4; }
 
 int JP(proc* p)
@@ -118,7 +132,7 @@ int XOR_A(proc* p) { return XOR(p, &p->af.r8.high, p->mem[p->pc+1]); }
 
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
-  not_implemented,  // 0x01
+  LD_BC,            // 0x01
   not_implemented,  // 0x02
   not_implemented,  // 0x03
   not_implemented,  // 0x04
@@ -134,7 +148,7 @@ op operations[NUM_OPS] = {
   LD_C,             // 0x0e
   not_implemented,  // 0x0f
   not_implemented,  // 0x10
-  not_implemented,  // 0x11
+  LD_DE,            // 0x11
   not_implemented,  // 0x12
   not_implemented,  // 0x13
   not_implemented,  // 0x14
@@ -166,7 +180,7 @@ op operations[NUM_OPS] = {
   LD_L,             // 0x2e
   not_implemented,  // 0x2f
   not_implemented,  // 0x30
-  not_implemented,  // 0x31
+  LD_SP,            // 0x31
   not_implemented,  // 0x32
   not_implemented,  // 0x33
   not_implemented,  // 0x34
