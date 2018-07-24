@@ -5,6 +5,14 @@
 
 #define NUM_OPS 0x100
 
+typedef struct {
+  uint8_t z:1;
+  uint8_t n:1;
+  uint8_t h:1;
+  uint8_t c:1;
+  uint8_t not_used:1;
+} flags;
+
 typedef union {
   struct 
   {
@@ -23,6 +31,8 @@ typedef struct {
 
   uint16_t sp;
   uint16_t pc;
+
+  flags f;
   
   char *mem;
 } proc;
