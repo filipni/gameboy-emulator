@@ -9,11 +9,67 @@ int LD_imm(uint8_t* nn, uint8_t n)
   return 8;
 }
 
-int LD_reg(uint8_t* r1, uint8_t* r2)
+int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
 {
   *r1 = *r2;
+
+  p->pc++;
   return 4;
 }
+
+int LD_B_B(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.high); }
+int LD_B_C(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.low); }
+int LD_B_D(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.high); }
+int LD_B_E(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.low); }
+int LD_B_H(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.high); }
+int LD_B_L(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.low); }
+// LD_BHL
+int LD_B_A(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->af.r8.high); }
+
+int LD_C_B(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->bc.r8.high); }
+int LD_C_C(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->bc.r8.low); }
+int LD_C_D(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.high); }
+int LD_C_E(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.low); }
+int LD_C_H(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.high); }
+int LD_C_L(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.low); }
+// LD_CHL
+int LD_C_A(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->af.r8.high); }
+
+int LD_D_B(proc* p) { return LD_reg(p, &p->de.r8.high, &p->bc.r8.high); }
+int LD_D_C(proc* p) { return LD_reg(p, &p->de.r8.high, &p->bc.r8.low); }
+int LD_D_D(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.high); }
+int LD_D_E(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.low); }
+int LD_D_H(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.high); }
+int LD_D_L(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.low); }
+// LD_DHL
+int LD_D_A(proc* p) { return LD_reg(p, &p->de.r8.high, &p->af.r8.high); }
+
+int LD_E_B(proc* p) { return LD_reg(p, &p->de.r8.low, &p->bc.r8.high); }
+int LD_E_C(proc* p) { return LD_reg(p, &p->de.r8.low, &p->bc.r8.low); }
+int LD_E_D(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.high); }
+int LD_E_E(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.low); }
+int LD_E_H(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.high); }
+int LD_E_L(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.low); }
+// LD_EHL
+int LD_E_A(proc* p) { return LD_reg(p, &p->de.r8.low, &p->af.r8.high); }
+
+int LD_H_B(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->bc.r8.high); }
+int LD_H_C(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->bc.r8.low); }
+int LD_H_D(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.high); }
+int LD_H_E(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.low); }
+int LD_H_H(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.high); }
+int LD_H_L(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.low); }
+// LD_EHL
+int LD_H_A(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->af.r8.high); }
+
+int LD_L_B(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->bc.r8.high); }
+int LD_L_C(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->bc.r8.low); }
+int LD_L_D(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.high); }
+int LD_L_E(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.low); }
+int LD_L_H(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.high); }
+int LD_L_L(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.low); }
+// LD_EHL
+int LD_L_A(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->af.r8.high); }
 
 int LD_HL(proc* p)
 {
@@ -114,54 +170,54 @@ op operations[NUM_OPS] = {
   not_implemented, // 0x3d
   not_implemented, // 0x3e
   not_implemented, // 0x3f
-  not_implemented, // 0x40
-  not_implemented, // 0x41
-  not_implemented, // 0x42
-  not_implemented, // 0x43
-  not_implemented, // 0x44
-  not_implemented, // 0x45
+  LD_B_B,           // 0x40
+  LD_B_C,           // 0x41
+  LD_B_D,           // 0x42
+  LD_B_E,           // 0x43
+  LD_B_H,           // 0x44
+  LD_B_L,           // 0x45
   not_implemented, // 0x46
-  not_implemented, // 0x47
-  not_implemented, // 0x48
-  not_implemented, // 0x49
-  not_implemented, // 0x4a
-  not_implemented, // 0x4b
-  not_implemented, // 0x4c
-  not_implemented, // 0x4d
+  LD_B_A,           // 0x47
+  LD_C_B,           // 0x48
+  LD_C_C,           // 0x49
+  LD_C_D,           // 0x4a
+  LD_C_E,           // 0x4b
+  LD_C_H,           // 0x4c
+  LD_C_L,           // 0x4d
   not_implemented, // 0x4e
-  not_implemented, // 0x4f
-  not_implemented, // 0x50
-  not_implemented, // 0x51
-  not_implemented, // 0x52
-  not_implemented, // 0x53
-  not_implemented, // 0x54
-  not_implemented, // 0x55
+  LD_C_A,           // 0x4f
+  LD_D_B,           // 0x50
+  LD_D_C,           // 0x51
+  LD_D_D,           // 0x52
+  LD_D_E,           // 0x53
+  LD_D_H,           // 0x54
+  LD_D_L,           // 0x55
   not_implemented, // 0x56
-  not_implemented, // 0x57
-  not_implemented, // 0x58
-  not_implemented, // 0x59
-  not_implemented, // 0x5a
-  not_implemented, // 0x5b
-  not_implemented, // 0x5c
-  not_implemented, // 0x5d
+  LD_D_A,           // 0x57 
+  LD_E_B,           // 0x58
+  LD_E_C,           // 0x59
+  LD_E_D,           // 0x5a
+  LD_E_E,           // 0x5b
+  LD_E_H,           // 0x5c
+  LD_E_L,           // 0x5d
   not_implemented, // 0x5e
-  not_implemented, // 0x5f
-  not_implemented, // 0x60
-  not_implemented, // 0x61
-  not_implemented, // 0x62
-  not_implemented, // 0x63
-  not_implemented, // 0x64
-  not_implemented, // 0x65
+  LD_E_A,           // 0x5f 
+  LD_H_B,           // 0x60
+  LD_H_C,           // 0x61
+  LD_H_D,           // 0x62
+  LD_H_E,           // 0x63
+  LD_H_H,           // 0x64
+  LD_H_L,           // 0x65
   not_implemented, // 0x66
-  not_implemented, // 0x67
-  not_implemented, // 0x68
-  not_implemented, // 0x69
-  not_implemented, // 0x6a
-  not_implemented, // 0x6b
-  not_implemented, // 0x6c
-  not_implemented, // 0x6d
+  LD_H_A,           // 0x67 
+  LD_L_B,           // 0x68
+  LD_L_C,           // 0x69
+  LD_L_D,           // 0x6a
+  LD_L_E,           // 0x6b
+  LD_L_H,           // 0x6c
+  LD_L_L,           // 0x6d
   not_implemented, // 0x6e
-  not_implemented, // 0x6f
+  LD_L_A,           // 0x6f 
   not_implemented, // 0x70
   not_implemented, // 0x71
   not_implemented, // 0x72
