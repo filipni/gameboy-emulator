@@ -34,7 +34,11 @@ int LD_imm(uint8_t*, uint8_t);
 int LD_reg(uint8_t*, uint8_t*);
 
 int NOP(proc*);
+int JP(proc*);
 int not_implemented(proc*);
+
+int XOR(proc*, uint8_t*, uint8_t);
+int XOR_A(proc*);
 
 #endif
 

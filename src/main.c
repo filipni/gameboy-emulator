@@ -25,7 +25,8 @@ int main(int argc, char* argv[])
     int res = run_operation(&p, memory[p.pc]); 
     if (res < 0)
     {
-      printf("Unrecognized op: %x\n", (uint8_t) memory[p.pc]);
+      printf("Stopped at pc: 0x%x\n", p.pc);
+      printf("Unrecognized op: 0x%x\n", (uint8_t) memory[p.pc]);
       return -1;
     }
   }

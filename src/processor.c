@@ -24,8 +24,24 @@ int JP(proc* p)
   return 16;
 }
 
+int XOR(proc* p, uint8_t* reg, uint8_t arg)
+{
+  *reg |= arg;
+  
+  p->pc++;
+  return 4;
+}
+
+int XOR_B(proc* p) { return XOR(p, &p->bc.r8.high, p->mem[p->pc+1]); }
+int XOR_C(proc* p) { return XOR(p, &p->bc.r8.low, p->mem[p->pc+1]); }
+int XOR_D(proc* p) { return XOR(p, &p->de.r8.high, p->mem[p->pc+1]); }
+int XOR_E(proc* p) { return XOR(p, &p->de.r8.low, p->mem[p->pc+1]); }
+int XOR_H(proc* p) { return XOR(p, &p->hl.r8.high, p->mem[p->pc+1]); }
+int XOR_L(proc* p) { return XOR(p, &p->hl.r8.low, p->mem[p->pc+1]); }
+int XOR_A(proc* p) { return XOR(p, &p->af.r8.high, p->mem[p->pc+1]); }
+
 op operations[NUM_OPS] = { 
-  NOP, // 0x00
+  NOP,             // 0x00
   not_implemented, // 0x01
   not_implemented, // 0x02
   not_implemented, // 0x03
@@ -193,14 +209,14 @@ op operations[NUM_OPS] = {
   not_implemented, // 0xa5
   not_implemented, // 0xa6
   not_implemented, // 0xa7
-  not_implemented, // 0xa8
-  not_implemented, // 0xa9
-  not_implemented, // 0xaa
-  not_implemented, // 0xab
-  not_implemented, // 0xac
-  not_implemented, // 0xad
+  XOR_B,           // 0xa8
+  XOR_C,           // 0xa9
+  XOR_D,           // 0xaa
+  XOR_E,           // 0xab
+  XOR_H,           // 0xac
+  XOR_L,           // 0xad
   not_implemented, // 0xae
-  not_implemented, // 0xaf
+  XOR_A,           // 0xaf
   not_implemented, // 0xb0
   not_implemented, // 0xb1
   not_implemented, // 0xb2
