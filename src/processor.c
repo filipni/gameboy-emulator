@@ -1,5 +1,6 @@
 #include "processor.h"
 #include "utils.h"
+#include <string.h>
 
 int not_implemented(proc* p) { return -1; }
 
@@ -117,6 +118,11 @@ int JP(proc* p)
 int XOR(proc* p, uint8_t* reg, uint8_t arg)
 {
   *reg |= arg;
+
+  // set flags
+  memset(&p->f, 0, sizeof(flags));
+  if (*reg == 0)
+    p->f.z = 1;
   
   p->pc++;
   return 4;
