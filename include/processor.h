@@ -8,8 +8,9 @@
 typedef union {
   struct 
   {
-    uint8_t high;
+    // little endian
     uint8_t low;
+    uint8_t high;
   } r8;
   uint16_t r16;
 } reg;
@@ -32,6 +33,7 @@ int run_operation(proc*, uint8_t);
 
 int LD_imm(uint8_t*, uint8_t);
 int LD_reg(uint8_t*, uint8_t*);
+int LD_HL(proc*);
 
 int NOP(proc*);
 int JP(proc*);

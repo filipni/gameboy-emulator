@@ -15,6 +15,15 @@ int LD_reg(uint8_t* r1, uint8_t* r2)
   return 4;
 }
 
+int LD_HL(proc* p)
+{
+  p->hl.r8.low = p->mem[p->pc+1]; 
+  p->hl.r8.high = p->mem[p->pc+2]; 
+
+  p->pc += 3;
+  return 12;
+}
+
 int NOP(proc* p) { p->pc++; return 4; }
 
 int JP(proc* p)
@@ -74,7 +83,7 @@ op operations[NUM_OPS] = {
   not_implemented, // 0x1e
   not_implemented, // 0x1f
   not_implemented, // 0x20
-  not_implemented, // 0x21
+  LD_HL,           // 0x21
   not_implemented, // 0x22
   not_implemented, // 0x23
   not_implemented, // 0x24
