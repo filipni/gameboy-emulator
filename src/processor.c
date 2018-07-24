@@ -1,4 +1,5 @@
 #include "processor.h"
+#include "utils.h"
 
 int not_implemented(proc* p) { return -1; }
 
@@ -15,6 +16,13 @@ int LD_reg(uint8_t* r1, uint8_t* r2)
 }
 
 int NOP(proc* p) { p->pc++; return 4; }
+
+int JP(proc* p)
+{
+  uint16_t adr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+  p->pc = adr;
+  return 16;
+}
 
 op operations[NUM_OPS] = { 
   NOP, // 0x00
@@ -212,7 +220,7 @@ op operations[NUM_OPS] = {
   not_implemented, // 0xc0
   not_implemented, // 0xc1
   not_implemented, // 0xc2
-  not_implemented, // 0xc3
+  JP,              // 0xc3
   not_implemented, // 0xc4
   not_implemented, // 0xc5
   not_implemented, // 0xc6

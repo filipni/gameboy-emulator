@@ -19,8 +19,11 @@ typedef struct {
   reg bc;
   reg de;
   reg hl;
+
   uint16_t sp;
   uint16_t pc;
+  
+  char *mem;
 } proc;
 
 typedef int (*op) (proc*);

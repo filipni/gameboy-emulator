@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "constants.h"
 #include "processor.h"
+#include "utils.h"
 
 #define ROM_FILE "roms/tetris.gb"
 #define ROM_SIZE 32768
@@ -16,6 +17,7 @@ int main(int argc, char* argv[])
 
   proc p;
   p.pc = 0;
+  p.mem = memory;
 
   // main loop
   while (1)
