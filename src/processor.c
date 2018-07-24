@@ -17,6 +17,19 @@ int INC_DE(proc* p) { return INC(p, &p->de.r16); }
 int INC_HL(proc* p) { return INC(p, &p->hl.r16); }
 int INC_SP(proc* p) { return INC(p, &p->sp); }
 
+int DEC(proc* p, uint16_t* r)
+{
+  *r--;
+
+  p->pc++;
+  return 8;
+}
+
+int DEC_BC(proc* p) { return INC(p, &p->bc.r16); }
+int DEC_DE(proc* p) { return INC(p, &p->de.r16); }
+int DEC_HL(proc* p) { return INC(p, &p->hl.r16); }
+int DEC_SP(proc* p) { return INC(p, &p->sp); }
+
 int LD_d8(proc* p, uint8_t* nn)
 {
   *nn = p->mem[p->pc+1];
@@ -158,7 +171,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x05
   LD_B,             // 0x06
   not_implemented,  // 0x07
-  not_implemented,  // 0x08
+  DEC_BC,           // 0x08
   not_implemented,  // 0x09
   not_implemented,  // 0x0a
   not_implemented,  // 0x0b
@@ -174,7 +187,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x15
   LD_D,             // 0x16
   not_implemented,  // 0x17
-  not_implemented,  // 0x18
+  DEC_DE,           // 0x18
   not_implemented,  // 0x19
   not_implemented,  // 0x1a
   not_implemented,  // 0x1b
@@ -190,7 +203,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x25
   LD_H,             // 0x26
   not_implemented,  // 0x27
-  not_implemented,  // 0x28
+  DEC_HL,           // 0x28
   not_implemented,  // 0x29
   not_implemented,  // 0x2a
   not_implemented,  // 0x2b
@@ -206,7 +219,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x35
   not_implemented,  // 0x36
   not_implemented,  // 0x37
-  not_implemented,  // 0x38
+  DEC_SP,           // 0x38
   not_implemented,  // 0x39
   not_implemented,  // 0x3a
   not_implemented,  // 0x3b
