@@ -41,19 +41,12 @@ int LD_d8(proc* p, uint8_t* nn)
 int LD_B(proc* p) { LD_d8(p, &p->bc.r8.high); }
 int LD_D(proc* p) { LD_d8(p, &p->de.r8.high); }
 int LD_H(proc* p) { LD_d8(p, &p->hl.r8.high); }
+int LD_mHL(proc* p) { LD_d8(p, (uint8_t*) (p->mem + p->hl.r16)); }
 
 int LD_C(proc* p) { LD_d8(p, &p->bc.r8.low); }
 int LD_E(proc* p) { LD_d8(p, &p->de.r8.low); }
 int LD_L(proc* p) { LD_d8(p, &p->hl.r8.low); }
 int LD_A(proc* p) { LD_d8(p, &p->af.r8.high); }
-
-int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
-{
-  *r1 = *r2;
-
-  p->pc++;
-  return 4;
-}
 
 int LD_d16(proc* p, reg* r)
 {
@@ -78,13 +71,119 @@ int LD_SP(proc* p)
   return 12;
 }
 
+int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem) 
+{ 
+  *reg = *mem;
+
+  p->pc++;
+  return 8;
+}
+
+int LD_mBC_A(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->bc.r16);
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+}
+int LD_mDE_A(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+}
+int LD_A_mBC(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->bc.r16);
+  return LD_reg_mem(p, &p->af.r8.high, mem_pos); 
+}
+int LD_A_mDE(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, &p->af.r8.high, mem_pos); 
+}
+int LD_B_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->bc.r8.high, mem_pos); 
+}
+int LD_D_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->de.r8.high, mem_pos); 
+}
+int LD_H_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->hl.r8.high, mem_pos); 
+}
+int LD_C_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->bc.r8.low, mem_pos); 
+}
+int LD_E_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->de.r8.low, mem_pos); 
+}
+int LD_L_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->hl.r8.low, mem_pos); 
+}
+int LD_A_mHL(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
+  return LD_reg_mem(p, &p->af.r8.low, mem_pos); 
+}
+int LD_mHL_B(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->bc.r8.high); 
+}
+int LD_mHL_C(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->bc.r8.low); 
+}
+int LD_mHL_D(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->de.r8.high); 
+}
+int LD_mHL_E(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->de.r8.low); 
+}
+int LD_mHL_H(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->hl.r8.high); 
+}
+int LD_mHL_L(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->hl.r8.low); 
+}
+int LD_mHL_A(proc* p)
+{
+  uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+}
+
+int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
+{
+  *r1 = *r2;
+
+  p->pc++;
+  return 4;
+}
+
 int LD_B_B(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.high); }
 int LD_B_C(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.low); }
 int LD_B_D(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.high); }
 int LD_B_E(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.low); }
 int LD_B_H(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.high); }
 int LD_B_L(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.low); }
-// LD_BHL
 int LD_B_A(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->af.r8.high); }
 
 int LD_C_B(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->bc.r8.high); }
@@ -93,7 +192,6 @@ int LD_C_D(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.high); }
 int LD_C_E(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.low); }
 int LD_C_H(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.high); }
 int LD_C_L(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.low); }
-// LD_CHL
 int LD_C_A(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->af.r8.high); }
 
 int LD_D_B(proc* p) { return LD_reg(p, &p->de.r8.high, &p->bc.r8.high); }
@@ -102,7 +200,6 @@ int LD_D_D(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.high); }
 int LD_D_E(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.low); }
 int LD_D_H(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.high); }
 int LD_D_L(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.low); }
-// LD_DHL
 int LD_D_A(proc* p) { return LD_reg(p, &p->de.r8.high, &p->af.r8.high); }
 
 int LD_E_B(proc* p) { return LD_reg(p, &p->de.r8.low, &p->bc.r8.high); }
@@ -111,7 +208,6 @@ int LD_E_D(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.high); }
 int LD_E_E(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.low); }
 int LD_E_H(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.high); }
 int LD_E_L(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.low); }
-// LD_EHL
 int LD_E_A(proc* p) { return LD_reg(p, &p->de.r8.low, &p->af.r8.high); }
 
 int LD_H_B(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->bc.r8.high); }
@@ -120,7 +216,6 @@ int LD_H_D(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.high); }
 int LD_H_E(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.low); }
 int LD_H_H(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.high); }
 int LD_H_L(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.low); }
-// LD_EHL
 int LD_H_A(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->af.r8.high); }
 
 int LD_L_B(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->bc.r8.high); }
@@ -129,8 +224,15 @@ int LD_L_D(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.high); }
 int LD_L_E(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.low); }
 int LD_L_H(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.high); }
 int LD_L_L(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.low); }
-// LD_EHL
 int LD_L_A(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->af.r8.high); }
+
+int LD_A_B(proc* p) { return LD_reg(p, &p->af.r8.high, &p->bc.r8.high); }
+int LD_A_C(proc* p) { return LD_reg(p, &p->af.r8.high, &p->bc.r8.low); }
+int LD_A_D(proc* p) { return LD_reg(p, &p->af.r8.high, &p->de.r8.high); }
+int LD_A_E(proc* p) { return LD_reg(p, &p->af.r8.high, &p->de.r8.low); }
+int LD_A_H(proc* p) { return LD_reg(p, &p->af.r8.high, &p->hl.r8.high); }
+int LD_A_L(proc* p) { return LD_reg(p, &p->af.r8.high, &p->hl.r8.low); }
+int LD_A_A(proc* p) { return LD_reg(p, &p->af.r8.high, &p->af.r8.high); }
 
 int NOP(proc* p) { p->pc++; return 4; }
 
@@ -165,7 +267,7 @@ int XOR_A(proc* p) { return XOR(p, &p->af.r8.high, p->mem[p->pc+1]); }
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
   LD_BC,            // 0x01
-  not_implemented,  // 0x02
+  LD_mBC_A,         // 0x02
   INC_BC,           // 0x03
   not_implemented,  // 0x04
   not_implemented,  // 0x05
@@ -173,7 +275,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x07
   DEC_BC,           // 0x08
   not_implemented,  // 0x09
-  not_implemented,  // 0x0a
+  LD_A_mBC,         // 0x0a
   not_implemented,  // 0x0b
   not_implemented,  // 0x0c
   not_implemented,  // 0x0d
@@ -181,7 +283,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x0f
   not_implemented,  // 0x10
   LD_DE,            // 0x11
-  not_implemented,  // 0x12
+  LD_mDE_A,         // 0x12
   INC_DE,           // 0x13
   not_implemented,  // 0x14
   not_implemented,  // 0x15
@@ -189,7 +291,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x17
   DEC_DE,           // 0x18
   not_implemented,  // 0x19
-  not_implemented,  // 0x1a
+  LD_A_mDE,         // 0x1a
   not_implemented,  // 0x1b
   not_implemented,  // 0x1c
   not_implemented,  // 0x1d
@@ -217,7 +319,7 @@ op operations[NUM_OPS] = {
   INC_SP,           // 0x33
   not_implemented,  // 0x34
   not_implemented,  // 0x35
-  not_implemented,  // 0x36
+  LD_mHL,           // 0x36
   not_implemented,  // 0x37
   DEC_SP,           // 0x38
   not_implemented,  // 0x39
@@ -233,7 +335,7 @@ op operations[NUM_OPS] = {
   LD_B_E,           // 0x43
   LD_B_H,           // 0x44
   LD_B_L,           // 0x45
-  not_implemented,  // 0x46
+  LD_B_mHL,         // 0x46
   LD_B_A,           // 0x47
   LD_C_B,           // 0x48
   LD_C_C,           // 0x49
@@ -241,7 +343,7 @@ op operations[NUM_OPS] = {
   LD_C_E,           // 0x4b
   LD_C_H,           // 0x4c
   LD_C_L,           // 0x4d
-  not_implemented,  // 0x4e
+  LD_C_mHL,         // 0x4e
   LD_C_A,           // 0x4f
   LD_D_B,           // 0x50
   LD_D_C,           // 0x51
@@ -249,7 +351,7 @@ op operations[NUM_OPS] = {
   LD_D_E,           // 0x53
   LD_D_H,           // 0x54
   LD_D_L,           // 0x55
-  not_implemented,  // 0x56
+  LD_D_mHL,         // 0x56
   LD_D_A,           // 0x57 
   LD_E_B,           // 0x58
   LD_E_C,           // 0x59
@@ -257,7 +359,7 @@ op operations[NUM_OPS] = {
   LD_E_E,           // 0x5b
   LD_E_H,           // 0x5c
   LD_E_L,           // 0x5d
-  not_implemented,  // 0x5e
+  LD_E_mHL,         // 0x5e
   LD_E_A,           // 0x5f 
   LD_H_B,           // 0x60
   LD_H_C,           // 0x61
@@ -265,7 +367,7 @@ op operations[NUM_OPS] = {
   LD_H_E,           // 0x63
   LD_H_H,           // 0x64
   LD_H_L,           // 0x65
-  not_implemented,  // 0x66
+  LD_H_mHL,         // 0x66
   LD_H_A,           // 0x67 
   LD_L_B,           // 0x68
   LD_L_C,           // 0x69
@@ -273,24 +375,24 @@ op operations[NUM_OPS] = {
   LD_L_E,           // 0x6b
   LD_L_H,           // 0x6c
   LD_L_L,           // 0x6d
-  not_implemented,  // 0x6e
+  LD_L_mHL,         // 0x6e
   LD_L_A,           // 0x6f 
-  not_implemented,  // 0x70
-  not_implemented,  // 0x71
-  not_implemented,  // 0x72
-  not_implemented,  // 0x73
-  not_implemented,  // 0x74
-  not_implemented,  // 0x75
+  LD_mHL_B,         // 0x70
+  LD_mHL_C,         // 0x71
+  LD_mHL_D,         // 0x72
+  LD_mHL_E,         // 0x73
+  LD_mHL_H,         // 0x74
+  LD_mHL_L,         // 0x75
   not_implemented,  // 0x76
-  not_implemented,  // 0x77
-  not_implemented,  // 0x78
-  not_implemented,  // 0x79
-  not_implemented,  // 0x7a
-  not_implemented,  // 0x7b
-  not_implemented,  // 0x7c
-  not_implemented,  // 0x7d
-  not_implemented,  // 0x7e
-  not_implemented,  // 0x7f
+  LD_mHL_A,         // 0x77
+  LD_A_B,           // 0x78
+  LD_A_C,           // 0x79
+  LD_A_D,           // 0x7a
+  LD_A_E,           // 0x7b
+  LD_A_H,           // 0x7c
+  LD_A_L,           // 0x7d
+  LD_A_mHL,         // 0x7e
+  LD_A_A,           // 0x7f
   not_implemented,  // 0x80
   not_implemented,  // 0x81
   not_implemented,  // 0x82
