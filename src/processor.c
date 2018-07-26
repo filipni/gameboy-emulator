@@ -312,6 +312,24 @@ int JP(proc* p)
   return 16;
 }
 
+int COND_JP(proc* p, uint8_t cond)
+{
+  if (cond)
+  {
+    uint16_t adr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+    p->pc = adr;
+    return 16;
+  }
+
+  p->pc += 3;
+  return 12; 
+}
+
+int JP_NZ(proc* p) { return COND_JP(p, !p->f.z); }
+int JP_Z(proc* p) { return COND_JP(p, p->f.z); }
+int JP_NC(proc* p) { return COND_JP(p, !p->f.c); }
+int JP_C(proc* p) { return COND_JP(p, p->f.c); }
+
 int XOR(proc* p, uint8_t* reg, uint8_t arg)
 {
   *reg |= arg;
@@ -332,6 +350,36 @@ int XOR_E(proc* p) { return XOR(p, &p->de.r8.low, p->mem[p->pc+1]); }
 int XOR_H(proc* p) { return XOR(p, &p->hl.r8.high, p->mem[p->pc+1]); }
 int XOR_L(proc* p) { return XOR(p, &p->hl.r8.low, p->mem[p->pc+1]); }
 int XOR_A(proc* p) { return XOR(p, &p->af.r8.high, p->mem[p->pc+1]); }
+
+int POP(proc* p, uint16_t* r)
+{
+  uint16_t val = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
+  *r = val;
+  
+  p->sp += 2;
+  p->pc += 1;
+  return 12;
+}
+
+int POP_BC(proc* p) { return POP(p, &p->bc.r16); }
+int POP_DE(proc* p) { return POP(p, &p->de.r16); }
+int POP_HL(proc* p) { return POP(p, &p->hl.r16); }
+//int POP_AF(proc*p)  { return POP(p, &p->af.r16); } // Check how the flags are going to be set
+
+int PUSH(proc* p, reg* r)
+{
+  p->mem[p->sp+1] = r->r8.high;
+  p->mem[p->sp+2] = r->r8.low;
+
+  p->sp += 2;
+  p->pc += 1;
+  return 16;
+}
+
+int PUSH_BC(proc* p) { return PUSH(p, &p->bc); }
+int PUSH_DE(proc* p) { return PUSH(p, &p->de); }
+int PUSH_HL(proc* p) { return PUSH(p, &p->hl); }
+int PUSH_AF(proc* p) { return PUSH(p, &p->af); }
 
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
@@ -528,7 +576,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xbf
   not_implemented,  // 0xc0
   not_implemented,  // 0xc1
-  not_implemented,  // 0xc2
+  JP_NZ,            // 0xc2
   JP,               // 0xc3
   not_implemented,  // 0xc4
   not_implemented,  // 0xc5
@@ -536,7 +584,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xc7
   not_implemented,  // 0xc8
   not_implemented,  // 0xc9
-  not_implemented,  // 0xca
+  JP_Z,  // 0xca
   not_implemented,  // 0xcb
   not_implemented,  // 0xcc
   not_implemented,  // 0xcd
@@ -544,7 +592,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xcf
   not_implemented,  // 0xd0
   not_implemented,  // 0xd1
-  not_implemented,  // 0xd2
+  JP_NC,            // 0xd2
   not_implemented,  // 0xd3
   not_implemented,  // 0xd4
   not_implemented,  // 0xd5
@@ -552,7 +600,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xd7
   not_implemented,  // 0xd8
   not_implemented,  // 0xd9
-  not_implemented,  // 0xda
+  JP_C,             // 0xda
   not_implemented,  // 0xdb
   not_implemented,  // 0xdc
   not_implemented,  // 0xdd
