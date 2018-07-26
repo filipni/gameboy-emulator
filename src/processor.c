@@ -381,6 +381,25 @@ int PUSH_DE(proc* p) { return PUSH(p, &p->de); }
 int PUSH_HL(proc* p) { return PUSH(p, &p->hl); }
 int PUSH_AF(proc* p) { return PUSH(p, &p->af); }
 
+int RST(proc* p, uint8_t addr)
+{
+  p->mem[p->sp+1] = p->pc;
+  p->pc = addr;
+
+  p->sp++;
+  return 16;
+}
+
+int RST_00(proc* p) { return RST(p, 0x00); }
+int RST_10(proc* p) { return RST(p, 0x10); }
+int RST_20(proc* p) { return RST(p, 0x20); }
+int RST_30(proc* p) { return RST(p, 0x30); }
+
+int RST_08(proc* p) { return RST(p, 0x08); }
+int RST_18(proc* p) { return RST(p, 0x18); }
+int RST_28(proc* p) { return RST(p, 0x28); }
+int RST_38(proc* p) { return RST(p, 0x38); }
+
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
   LD_BC,            // 0x01
@@ -581,7 +600,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xc4
   PUSH_BC,          // 0xc5
   not_implemented,  // 0xc6
-  not_implemented,  // 0xc7
+  RST_00,           // 0xc7
   not_implemented,  // 0xc8
   not_implemented,  // 0xc9
   JP_Z,             // 0xca
@@ -589,7 +608,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xcc
   not_implemented,  // 0xcd
   not_implemented,  // 0xce
-  not_implemented,  // 0xcf
+  RST_08,           // 0xcf
   not_implemented,  // 0xd0
   POP_DE,           // 0xd1
   JP_NC,            // 0xd2
@@ -597,7 +616,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xd4
   PUSH_DE,          // 0xd5
   not_implemented,  // 0xd6
-  not_implemented,  // 0xd7
+  RST_10,           // 0xd7
   not_implemented,  // 0xd8
   not_implemented,  // 0xd9
   JP_C,             // 0xda
@@ -605,7 +624,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xdc
   not_implemented,  // 0xdd
   not_implemented,  // 0xde
-  not_implemented,  // 0xdf
+  RST_18,           // 0xdf
   not_implemented,  // 0xe0
   POP_HL,           // 0xe1
   not_implemented,  // 0xe2
@@ -613,7 +632,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xe4
   PUSH_HL,          // 0xe5
   not_implemented,  // 0xe6
-  not_implemented,  // 0xe7
+  RST_20,           // 0xe7
   not_implemented,  // 0xe8
   not_implemented,  // 0xe9
   not_implemented,  // 0xea
@@ -621,7 +640,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xec
   not_implemented,  // 0xed
   not_implemented,  // 0xee
-  not_implemented,  // 0xef
+  RST_28,           // 0xef
   not_implemented,  // 0xf0
   POP_AF,           // 0xf1
   not_implemented,  // 0xf2
@@ -629,7 +648,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xf4
   PUSH_AF,          // 0xf5
   not_implemented,  // 0xf6
-  not_implemented,  // 0xf7
+  RST_30,           // 0xf7
   not_implemented,  // 0xf8
   not_implemented,  // 0xf9
   not_implemented,  // 0xfa
@@ -637,7 +656,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xfc
   not_implemented,  // 0xfd
   not_implemented,  // 0xfe
-  not_implemented,  // 0xff
+  RST_38,            // 0xff
 };
 
 int run_operation(proc* p, uint8_t op)
