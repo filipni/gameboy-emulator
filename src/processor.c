@@ -431,7 +431,7 @@ op operations[NUM_OPS] = {
   LD_BC,            // 0x01
   LD_mBC_A,         // 0x02
   INC_BC,           // 0x03
-  not_implemented,  // 0x04
+  INC_B,            // 0x04
   DEC_B,            // 0x05
   LD_B,             // 0x06
   not_implemented,  // 0x07
@@ -439,15 +439,15 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x09
   LD_A_mBC,         // 0x0a
   not_implemented,  // 0x0b
-  not_implemented,  // 0x0c
-  not_implemented,  // 0x0d
+  INC_C,            // 0x0c
+  DEC_C,            // 0x0d
   LD_C,             // 0x0e
   not_implemented,  // 0x0f
   not_implemented,  // 0x10
   LD_DE,            // 0x11
   LD_mDE_A,         // 0x12
   INC_DE,           // 0x13
-  not_implemented,  // 0x14
+  INC_D,            // 0x14
   DEC_D,            // 0x15
   LD_D,             // 0x16
   not_implemented,  // 0x17
@@ -455,15 +455,15 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x19
   LD_A_mDE,         // 0x1a
   not_implemented,  // 0x1b
-  not_implemented,  // 0x1c
-  not_implemented,  // 0x1d
+  INC_E,            // 0x1c
+  DEC_E,            // 0x1d
   LD_E,             // 0x1e
   not_implemented,  // 0x1f
   not_implemented,  // 0x20
   LD_HL,            // 0x21
   LD_mHL_A_inc,     // 0x22
   INC_HL,           // 0x23
-  not_implemented,  // 0x24
+  INC_H,            // 0x24
   DEC_H,            // 0x25
   LD_H,             // 0x26
   not_implemented,  // 0x27
@@ -471,15 +471,15 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x29
   LD_A_mHL_inc,     // 0x2a
   not_implemented,  // 0x2b
-  LD_mHL_A_inc,     // 0x2c
-  not_implemented,  // 0x2d
+  INC_L,            // 0x2c
+  DEC_L,            // 0x2d
   LD_L,             // 0x2e
   not_implemented,  // 0x2f
   not_implemented,  // 0x30
   LD_SP,            // 0x31
   LD_mHL_A_dec,     // 0x32
   INC_SP,           // 0x33
-  not_implemented,  // 0x34
+  INC_mHL,          // 0x34
   DEC_mHL,          // 0x35
   LD_mHL,           // 0x36
   not_implemented,  // 0x37
@@ -487,8 +487,8 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x39
   LD_A_mHL_dec,     // 0x3a
   not_implemented,  // 0x3b
-  not_implemented,  // 0x3c
-  not_implemented,  // 0x3d
+  INC_A,            // 0x3c
+  DEC_A,            // 0x3d
   LD_A,             // 0x3e
   not_implemented,  // 0x3f
   LD_B_B,           // 0x40
