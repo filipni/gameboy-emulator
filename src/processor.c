@@ -4,7 +4,76 @@
 
 int not_implemented(proc* p) { return -1; }
 
-int INC(proc* p, uint16_t* r)
+uint8_t calculate_half_carry(uint8_t v1, uint8_t v2)
+{
+  int nibble = v1 & 0x0F;
+  nibble += v2;
+
+  if (nibble >= 0x10)
+    return 1;
+  else
+    return 0;
+}
+
+int INC_r8(proc* p, uint8_t* r)
+{
+  p->f.h = calculate_half_carry(*r, 1);
+  
+  (*r)++;
+
+  if (*r == 0)
+    p->f.z = 1;
+  else
+    p->f.z = 0;
+  p->f.n = 0;
+
+  p->pc++;
+  return 4;
+}
+
+int INC_B(proc* p) { return INC_r8(p, &p->bc.r8.high); }
+int INC_D(proc* p) { return INC_r8(p, &p->de.r8.high); }
+int INC_H(proc* p) { return INC_r8(p, &p->hl.r8.high); }
+int INC_mHL(proc* p) { return INC_r8(p, &p->mem[p->hl.r16]); }
+
+int INC_C(proc* p) { return INC_r8(p, &p->bc.r8.low); }
+int INC_E(proc* p) { return INC_r8(p, &p->de.r8.low); }
+int INC_L(proc* p) { return INC_r8(p, &p->hl.r8.low); }
+int INC_A(proc* p) { return INC_r8(p, &p->af.r8.high); }
+
+int LD_mHL_A_inc(proc* p) 
+{
+  p->mem[p->hl.r16++] = p->af.r8.high;
+
+  p->pc++;
+  return 8;
+}
+
+int LD_mHL_A_dec(proc* p) 
+{
+  p->mem[p->hl.r16--] = p->af.r8.high;
+
+  p->pc++;
+  return 8;
+}
+
+int LD_A_mHL_inc(proc* p) 
+{
+  p->af.r8.high = p->mem[p->hl.r16++];  
+
+  p->pc++;
+  return 8;
+}
+
+int LD_A_mHL_dec(proc* p)
+{
+  p->af.r8.high = p->mem[p->hl.r16--];
+
+  p->pc++;
+  return 8;
+}
+
+int INC_r16(proc* p, uint16_t* r)
 {
   *r++;
 
@@ -12,10 +81,10 @@ int INC(proc* p, uint16_t* r)
   return 8;
 }
 
-int INC_BC(proc* p) { return INC(p, &p->bc.r16); }
-int INC_DE(proc* p) { return INC(p, &p->de.r16); }
-int INC_HL(proc* p) { return INC(p, &p->hl.r16); }
-int INC_SP(proc* p) { return INC(p, &p->sp); }
+int INC_BC(proc* p) { return INC_r16(p, &p->bc.r16); }
+int INC_DE(proc* p) { return INC_r16(p, &p->de.r16); }
+int INC_HL(proc* p) { return INC_r16(p, &p->hl.r16); }
+int INC_SP(proc* p) { return INC_r16(p, &p->sp); }
 
 int DEC(proc* p, uint16_t* r)
 {
@@ -25,10 +94,10 @@ int DEC(proc* p, uint16_t* r)
   return 8;
 }
 
-int DEC_BC(proc* p) { return INC(p, &p->bc.r16); }
-int DEC_DE(proc* p) { return INC(p, &p->de.r16); }
-int DEC_HL(proc* p) { return INC(p, &p->hl.r16); }
-int DEC_SP(proc* p) { return INC(p, &p->sp); }
+int DEC_BC(proc* p) { return DEC(p, &p->bc.r16); }
+int DEC_DE(proc* p) { return DEC(p, &p->de.r16); }
+int DEC_HL(proc* p) { return DEC(p, &p->hl.r16); }
+int DEC_SP(proc* p) { return DEC(p, &p->sp); }
 
 int LD_d8(proc* p, uint8_t* nn)
 {
@@ -299,7 +368,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x1f
   not_implemented,  // 0x20
   LD_HL,            // 0x21
-  not_implemented,  // 0x22
+  LD_mHL_A_inc,     // 0x22
   INC_HL,           // 0x23
   not_implemented,  // 0x24
   not_implemented,  // 0x25
@@ -307,15 +376,15 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x27
   DEC_HL,           // 0x28
   not_implemented,  // 0x29
-  not_implemented,  // 0x2a
+  LD_A_mHL_inc,     // 0x2a
   not_implemented,  // 0x2b
-  not_implemented,  // 0x2c
+  LD_mHL_A_inc,     // 0x2c
   not_implemented,  // 0x2d
   LD_L,             // 0x2e
   not_implemented,  // 0x2f
   not_implemented,  // 0x30
   LD_SP,            // 0x31
-  not_implemented,  // 0x32
+  LD_mHL_A_dec,     // 0x32
   INC_SP,           // 0x33
   not_implemented,  // 0x34
   not_implemented,  // 0x35
@@ -323,7 +392,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0x37
   DEC_SP,           // 0x38
   not_implemented,  // 0x39
-  not_implemented,  // 0x3a
+  LD_A_mHL_dec,     // 0x3a
   not_implemented,  // 0x3b
   not_implemented,  // 0x3c
   not_implemented,  // 0x3d
