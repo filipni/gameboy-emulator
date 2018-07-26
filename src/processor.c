@@ -364,7 +364,7 @@ int POP(proc* p, uint16_t* r)
 int POP_BC(proc* p) { return POP(p, &p->bc.r16); }
 int POP_DE(proc* p) { return POP(p, &p->de.r16); }
 int POP_HL(proc* p) { return POP(p, &p->hl.r16); }
-//int POP_AF(proc*p)  { return POP(p, &p->af.r16); } // Check how the flags are going to be set
+int POP_AF(proc*p)  { return POP(p, &p->af.r16); }
 
 int PUSH(proc* p, reg* r)
 {
@@ -575,27 +575,27 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xbe
   not_implemented,  // 0xbf
   not_implemented,  // 0xc0
-  not_implemented,  // 0xc1
+  POP_BC,           // 0xc1
   JP_NZ,            // 0xc2
   JP,               // 0xc3
   not_implemented,  // 0xc4
-  not_implemented,  // 0xc5
+  PUSH_BC,          // 0xc5
   not_implemented,  // 0xc6
   not_implemented,  // 0xc7
   not_implemented,  // 0xc8
   not_implemented,  // 0xc9
-  JP_Z,  // 0xca
+  JP_Z,             // 0xca
   not_implemented,  // 0xcb
   not_implemented,  // 0xcc
   not_implemented,  // 0xcd
   not_implemented,  // 0xce
   not_implemented,  // 0xcf
   not_implemented,  // 0xd0
-  not_implemented,  // 0xd1
+  POP_DE,           // 0xd1
   JP_NC,            // 0xd2
   not_implemented,  // 0xd3
   not_implemented,  // 0xd4
-  not_implemented,  // 0xd5
+  PUSH_DE,          // 0xd5
   not_implemented,  // 0xd6
   not_implemented,  // 0xd7
   not_implemented,  // 0xd8
@@ -607,11 +607,11 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xde
   not_implemented,  // 0xdf
   not_implemented,  // 0xe0
-  not_implemented,  // 0xe1
+  POP_HL,           // 0xe1
   not_implemented,  // 0xe2
   not_implemented,  // 0xe3
   not_implemented,  // 0xe4
-  not_implemented,  // 0xe5
+  PUSH_HL,          // 0xe5
   not_implemented,  // 0xe6
   not_implemented,  // 0xe7
   not_implemented,  // 0xe8
@@ -623,11 +623,11 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xee
   not_implemented,  // 0xef
   not_implemented,  // 0xf0
-  not_implemented,  // 0xf1
+  POP_AF,           // 0xf1
   not_implemented,  // 0xf2
   not_implemented,  // 0xf3
   not_implemented,  // 0xf4
-  not_implemented,  // 0xf5
+  PUSH_AF,          // 0xf5
   not_implemented,  // 0xf6
   not_implemented,  // 0xf7
   not_implemented,  // 0xf8
