@@ -4,10 +4,10 @@
 
 int not_implemented(proc* p) { return -1; }
 
-uint8_t calculate_half_carry(uint8_t v1, uint8_t v2)
+uint8_t calculate_half_carry(int v1, int v2)
 {
   int nibble = v1 & 0x0F;
-  nibble += v2;
+  nibble += v2 & 0x0F;
 
   if (nibble >= 0x10)
     return 1;
@@ -40,6 +40,32 @@ int INC_C(proc* p) { return INC_r8(p, &p->bc.r8.low); }
 int INC_E(proc* p) { return INC_r8(p, &p->de.r8.low); }
 int INC_L(proc* p) { return INC_r8(p, &p->hl.r8.low); }
 int INC_A(proc* p) { return INC_r8(p, &p->af.r8.high); }
+
+int DEC_r8(proc* p, uint8_t* r)
+{
+  p->f.h = calculate_half_carry(*r, -1);
+  
+  (*r)--;
+
+  if (*r == 0)
+    p->f.z = 1;
+  else
+    p->f.z = 0;
+  p->f.n = 1;
+
+  p->pc++;
+  return 4;
+}
+
+int DEC_B(proc* p) { return DEC_r8(p, &p->bc.r8.high); }
+int DEC_D(proc* p) { return DEC_r8(p, &p->de.r8.high); }
+int DEC_H(proc* p) { return DEC_r8(p, &p->hl.r8.high); }
+int DEC_mHL(proc* p) { return DEC_r8(p, &p->mem[p->hl.r16]); }
+
+int DEC_C(proc* p) { return DEC_r8(p, &p->bc.r8.low); }
+int DEC_E(proc* p) { return DEC_r8(p, &p->de.r8.low); }
+int DEC_L(proc* p) { return DEC_r8(p, &p->hl.r8.low); }
+int DEC_A(proc* p) { return DEC_r8(p, &p->af.r8.high); }
 
 int LD_mHL_A_inc(proc* p) 
 {
@@ -406,7 +432,7 @@ op operations[NUM_OPS] = {
   LD_mBC_A,         // 0x02
   INC_BC,           // 0x03
   not_implemented,  // 0x04
-  not_implemented,  // 0x05
+  DEC_B,            // 0x05
   LD_B,             // 0x06
   not_implemented,  // 0x07
   DEC_BC,           // 0x08
@@ -422,7 +448,7 @@ op operations[NUM_OPS] = {
   LD_mDE_A,         // 0x12
   INC_DE,           // 0x13
   not_implemented,  // 0x14
-  not_implemented,  // 0x15
+  DEC_D,            // 0x15
   LD_D,             // 0x16
   not_implemented,  // 0x17
   DEC_DE,           // 0x18
@@ -438,7 +464,7 @@ op operations[NUM_OPS] = {
   LD_mHL_A_inc,     // 0x22
   INC_HL,           // 0x23
   not_implemented,  // 0x24
-  not_implemented,  // 0x25
+  DEC_H,            // 0x25
   LD_H,             // 0x26
   not_implemented,  // 0x27
   DEC_HL,           // 0x28
@@ -454,7 +480,7 @@ op operations[NUM_OPS] = {
   LD_mHL_A_dec,     // 0x32
   INC_SP,           // 0x33
   not_implemented,  // 0x34
-  not_implemented,  // 0x35
+  DEC_mHL,          // 0x35
   LD_mHL,           // 0x36
   not_implemented,  // 0x37
   DEC_SP,           // 0x38
