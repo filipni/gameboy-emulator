@@ -367,6 +367,31 @@ int JP_Z(proc* p) { return COND_JP(p, p->f.z); }
 int JP_NC(proc* p) { return COND_JP(p, !p->f.c); }
 int JP_C(proc* p) { return COND_JP(p, p->f.c); }
 
+int JR(proc* p)
+{
+  uint16_t adr = p->pc + p->mem[p->pc+1];
+  p->pc = adr;
+  return 12;
+}
+
+int COND_JR(proc* p, uint8_t cond)
+{
+  if (cond)
+  {
+    uint16_t adr = p->pc + p->mem[p->pc+1];
+    p->pc = adr;
+    return 12;
+  }
+
+  p->pc += 2;
+  return 8; 
+}
+
+int JR_NZ(proc* p) { return COND_JR(p, !p->f.z); }
+int JR_Z(proc* p) { return COND_JR(p, p->f.z); }
+int JR_NC(proc* p) { return COND_JR(p, !p->f.c); }
+int JR_C(proc* p) { return COND_JR(p, p->f.c); }
+
 int XOR(proc* p, uint8_t* reg, uint8_t arg)
 {
   *reg |= arg;
@@ -487,10 +512,10 @@ op operations[NUM_OPS] = {
   DEC_B,            // 0x05
   LD_B,             // 0x06
   not_implemented,  // 0x07
-  DEC_BC,           // 0x08
+  not_implemented,  // 0x08
   not_implemented,  // 0x09
   LD_A_mBC,         // 0x0a
-  not_implemented,  // 0x0b
+  DEC_BC,           // 0x0b
   INC_C,            // 0x0c
   DEC_C,            // 0x0d
   LD_C,             // 0x0e
@@ -503,15 +528,15 @@ op operations[NUM_OPS] = {
   DEC_D,            // 0x15
   LD_D,             // 0x16
   not_implemented,  // 0x17
-  DEC_DE,           // 0x18
+  JR,               // 0x18
   not_implemented,  // 0x19
   LD_A_mDE,         // 0x1a
-  not_implemented,  // 0x1b
+  DEC_DE,           // 0x1b
   INC_E,            // 0x1c
   DEC_E,            // 0x1d
   LD_E,             // 0x1e
   not_implemented,  // 0x1f
-  not_implemented,  // 0x20
+  JR_NZ,            // 0x20
   LD_HL,            // 0x21
   LD_mHL_A_inc,     // 0x22
   INC_HL,           // 0x23
@@ -519,7 +544,7 @@ op operations[NUM_OPS] = {
   DEC_H,            // 0x25
   LD_H,             // 0x26
   not_implemented,  // 0x27
-  DEC_HL,           // 0x28
+  JR_Z,             // 0x28
   not_implemented,  // 0x29
   LD_A_mHL_inc,     // 0x2a
   not_implemented,  // 0x2b
@@ -527,7 +552,7 @@ op operations[NUM_OPS] = {
   DEC_L,            // 0x2d
   LD_L,             // 0x2e
   not_implemented,  // 0x2f
-  not_implemented,  // 0x30
+  JR_NC,            // 0x30
   LD_SP,            // 0x31
   LD_mHL_A_dec,     // 0x32
   INC_SP,           // 0x33
@@ -535,10 +560,10 @@ op operations[NUM_OPS] = {
   DEC_mHL,          // 0x35
   LD_mHL,           // 0x36
   not_implemented,  // 0x37
-  DEC_SP,           // 0x38
+  JR_C,             // 0x38
   not_implemented,  // 0x39
   LD_A_mHL_dec,     // 0x3a
-  not_implemented,  // 0x3b
+  DEC_SP,           // 0x3b
   INC_A,            // 0x3c
   DEC_A,            // 0x3d
   LD_A,             // 0x3e
@@ -607,22 +632,22 @@ op operations[NUM_OPS] = {
   LD_A_L,           // 0x7d
   LD_A_mHL,         // 0x7e
   LD_A_A,           // 0x7f
-  not_implemented,  // 0x80
-  not_implemented,  // 0x81
-  not_implemented,  // 0x82
-  not_implemented,  // 0x83
-  not_implemented,  // 0x84
-  not_implemented,  // 0x85
-  not_implemented,  // 0x86
-  not_implemented,  // 0x87
-  not_implemented,  // 0x88
-  not_implemented,  // 0x89
-  not_implemented,  // 0x8a
-  not_implemented,  // 0x8b
-  not_implemented,  // 0x8c
-  not_implemented,  // 0x8d
-  not_implemented,  // 0x8e
-  not_implemented,  // 0x8f
+  ADD_A_B,          // 0x80
+  ADD_A_C,          // 0x81
+  ADD_A_D,          // 0x82
+  ADD_A_E,          // 0x83
+  ADD_A_H,          // 0x84
+  ADD_A_L,          // 0x85
+  ADD_A_mHL,        // 0x86
+  ADC_A_A,          // 0x87
+  ADC_A_B,          // 0x88
+  ADC_A_C,          // 0x89
+  ADC_A_D,          // 0x8a
+  ADC_A_E,          // 0x8b
+  ADC_A_H,          // 0x8c
+  ADC_A_L,          // 0x8d
+  ADC_A_mHL,        // 0x8e
+  ADC_A_A,          // 0x8f
   not_implemented,  // 0x90
   not_implemented,  // 0x91
   not_implemented,  // 0x92

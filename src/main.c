@@ -20,13 +20,16 @@ int main(int argc, char* argv[])
   p.mem = memory;
 
   // main loop
+  int counter = 0;
   while (1)
   {
+    counter++;
     int res = run_operation(&p, memory[p.pc]); 
     if (res < 0)
     {
       printf("Stopped at pc: 0x%x\n", p.pc);
       printf("Unrecognized op: 0x%x\n", (uint8_t) memory[p.pc]);
+      printf("Instructions executed: %d\n", counter);
       return -1;
     }
   }
