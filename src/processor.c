@@ -15,6 +15,17 @@ uint8_t calculate_half_carry(int v1, int v2)
     return 0;
 }
 
+uint8_t calculate_carry(int v1, int v2)
+{
+  int byte = v1 & 0xFF;
+  byte += v2 & 0xFF;
+
+  if (byte >= 0x100)
+    return 1;
+  else
+    return 0;
+}
+
 int INC_r8(proc* p, uint8_t* r)
 {
   p->f.h = calculate_half_carry(*r, 1);
@@ -425,6 +436,47 @@ int RST_08(proc* p) { return RST(p, 0x08); }
 int RST_18(proc* p) { return RST(p, 0x18); }
 int RST_28(proc* p) { return RST(p, 0x28); }
 int RST_38(proc* p) { return RST(p, 0x38); }
+
+int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
+{
+  int c = carry;
+
+  int res;
+  for (int i = 0; i < 8; i++)
+  {
+    uint8_t bitmask = 1 << i; 
+    int res = ((*r1) & bitmask) + (r2 & bitmask) + c;
+    c = res > bitmask;
+    if (i == 3) { p->f.h = c; }
+  }
+
+  p->f.c = c;
+  p->f.n = 0;
+  p->f.z = !(*r1);
+
+  *r1 += r2;
+
+  p->pc++;
+  return 4;
+}
+
+int ADD_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, 0); } 
+int ADD_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, 0); } 
+int ADD_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, 0); } 
+int ADD_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, 0); } 
+int ADD_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, 0); } 
+int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); } 
+int ADD_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
+int ADD_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, 0); }
+
+int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, p->f.c); } 
+int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, p->f.c); } 
+int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, p->f.c); } 
+int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, p->f.c); } 
+int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, p->f.c); } 
+int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, p->f.c); } 
+int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
+int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
 
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
