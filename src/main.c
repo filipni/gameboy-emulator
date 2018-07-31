@@ -9,7 +9,7 @@
 
 int main(int argc, char* argv[])
 {
-  char memory[MEMORY_SIZE];
+  char memory[MEMORY_SIZE] = {0};
 
   FILE* fp;
   fp = fopen(ROM_FILE, "rb");
