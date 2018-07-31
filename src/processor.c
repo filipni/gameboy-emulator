@@ -464,22 +464,16 @@ int RST_38(proc* p) { return RST(p, 0x38); }
 
 int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
-  int c = carry;
 
-  int res;
-  for (int i = 0; i < 8; i++)
-  {
-    uint8_t bitmask = 1 << i; 
-    int res = ((*r1) & bitmask) + (r2 & bitmask) + c;
-    c = res > bitmask;
-    if (i == 3) { p->f.h = c; }
-  }
+  uint8_t res = *r1 + r2 + carry;
+  int carrybits = *r1 ^ r2 ^ res; 
 
-  p->f.c = c;
   p->f.n = 0;
-  p->f.z = !(*r1);
+  p->f.z = !res;
+  p->f.h = carrybits & 0x10 == 1;
+  p->f.c = carrybits & 0x100 == 1;
 
-  *r1 += r2;
+  *r1 = res;
 
   p->pc++;
   return 4;
@@ -502,6 +496,37 @@ int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, p->f.c); }
 int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, p->f.c); } 
 int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
 int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
+
+int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry)
+{
+  p->f.n = 1;
+  p->f.c = r2 + carry > *r1;
+  p->f.h = (r2 + carry & 0x0F) > (*r1 & 0x0F);
+
+  *r1 -= r2 + carry;
+  p->f.z = !(*r1);
+
+  p->pc++;
+  return 4;
+}
+
+int SUB_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, 0); }
+int SUB_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, 0); }
+int SUB_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, 0); }
+int SUB_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, 0); }
+int SUB_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, 0); }
+int SUB_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, 0); }
+int SUB_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
+int SUB_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, 0); }
+
+int SBC_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, p->f.c); }
+int SBC_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, p->f.c); }
+int SBC_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, p->f.c); }
+int SBC_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, p->f.c); }
+int SBC_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, p->f.c); }
+int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, p->f.c); }
+int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
+int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
 
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
@@ -648,22 +673,22 @@ op operations[NUM_OPS] = {
   ADC_A_L,          // 0x8d
   ADC_A_mHL,        // 0x8e
   ADC_A_A,          // 0x8f
-  not_implemented,  // 0x90
-  not_implemented,  // 0x91
-  not_implemented,  // 0x92
-  not_implemented,  // 0x93
-  not_implemented,  // 0x94
-  not_implemented,  // 0x95
-  not_implemented,  // 0x96
-  not_implemented,  // 0x97
-  not_implemented,  // 0x98
-  not_implemented,  // 0x99
-  not_implemented,  // 0x9a
-  not_implemented,  // 0x9b
-  not_implemented,  // 0x9c
-  not_implemented,  // 0x9d
-  not_implemented,  // 0x9e
-  not_implemented,  // 0x9f
+  SUB_B,            // 0x90
+  SUB_C,            // 0x91
+  SUB_D,            // 0x92
+  SUB_E,            // 0x93
+  SUB_H,            // 0x94
+  SUB_L,            // 0x95
+  SUB_mHL,          // 0x96
+  SUB_A,            // 0x97
+  SBC_B,            // 0x98
+  SBC_C,            // 0x99
+  SBC_D,            // 0x9a
+  SBC_E,            // 0x9b
+  SBC_H,            // 0x9c
+  SBC_L,            // 0x9d
+  SBC_mHL,          // 0x9e
+  SBC_A,            // 0x9f
   not_implemented,  // 0xa0
   not_implemented,  // 0xa1
   not_implemented,  // 0xa2
