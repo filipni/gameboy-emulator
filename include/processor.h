@@ -41,7 +41,5 @@ typedef int (*op) (proc*);
 
 int run_operation(proc*, uint8_t); 
 
-int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry);
-
 #endif
 

@@ -528,6 +528,48 @@ int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, p->f.c); }
 int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
 int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
 
+int AND(proc* p, uint8_t* r)
+{
+  p->af.r8.high &= *r;
+  p->f.z = !p->af.r8.high;
+  p->f.n = 0;
+  p->f.h = 1;
+  p->f.c = 0;
+  
+  p->pc++;
+  return 4;
+}
+
+int AND_B(proc* p) { return AND(p, &p->bc.r8.high); }
+int AND_C(proc* p) { return AND(p, &p->bc.r8.low); }
+int AND_D(proc* p) { return AND(p, &p->de.r8.high); }
+int AND_E(proc* p) { return AND(p, &p->de.r8.low); }
+int AND_H(proc* p) { return AND(p, &p->hl.r8.high); }
+int AND_L(proc* p) { return AND(p, &p->hl.r8.low); }
+int AND_mHL(proc* p) { return AND(p, &p->mem[p->hl.r16]); }
+int AND_A(proc* p) { return AND(p, &p->af.r8.high); }
+
+int OR(proc* p, uint8_t* r)
+{
+  p->af.r8.high |= *r;
+  p->f.z = !p->af.r8.high;
+  p->f.n = 0;
+  p->f.h = 0;
+  p->f.c = 0;
+  
+  p->pc++;
+  return 4;
+}
+
+int OR_B(proc* p) { return OR(p, &p->bc.r8.high); }
+int OR_C(proc* p) { return OR(p, &p->bc.r8.low); }
+int OR_D(proc* p) { return OR(p, &p->de.r8.high); }
+int OR_E(proc* p) { return OR(p, &p->de.r8.low); }
+int OR_H(proc* p) { return OR(p, &p->hl.r8.high); }
+int OR_L(proc* p) { return OR(p, &p->hl.r8.low); }
+int OR_mHL(proc* p) { return OR(p, &p->mem[p->hl.r16]); }
+int OR_A(proc* p) { return OR(p, &p->af.r8.high); }
+
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
   LD_BC,            // 0x01
@@ -689,14 +731,14 @@ op operations[NUM_OPS] = {
   SBC_L,            // 0x9d
   SBC_mHL,          // 0x9e
   SBC_A,            // 0x9f
-  not_implemented,  // 0xa0
-  not_implemented,  // 0xa1
-  not_implemented,  // 0xa2
-  not_implemented,  // 0xa3
-  not_implemented,  // 0xa4
-  not_implemented,  // 0xa5
-  not_implemented,  // 0xa6
-  not_implemented,  // 0xa7
+  AND_B,            // 0xa0
+  AND_C,            // 0xa1
+  AND_D,            // 0xa2
+  AND_E,            // 0xa3
+  AND_H,            // 0xa4
+  AND_L,            // 0xa5
+  AND_mHL,          // 0xa6
+  AND_A,            // 0xa7
   XOR_B,            // 0xa8
   XOR_C,            // 0xa9
   XOR_D,            // 0xaa
@@ -705,14 +747,14 @@ op operations[NUM_OPS] = {
   XOR_L,            // 0xad
   not_implemented,  // 0xae
   XOR_A,            // 0xaf
-  not_implemented,  // 0xb0
-  not_implemented,  // 0xb1
-  not_implemented,  // 0xb2
-  not_implemented,  // 0xb3
-  not_implemented,  // 0xb4
-  not_implemented,  // 0xb5
-  not_implemented,  // 0xb6
-  not_implemented,  // 0xb7
+  OR_B,             // 0xb0
+  OR_C,             // 0xb1
+  OR_D,             // 0xb2
+  OR_E,             // 0xb3
+  OR_H,             // 0xb4
+  OR_L,             // 0xb5
+  OR_mHL,           // 0xb6
+  OR_A,             // 0xb7
   not_implemented,  // 0xb8
   not_implemented,  // 0xb9
   not_implemented,  // 0xba
