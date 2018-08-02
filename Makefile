@@ -1,5 +1,7 @@
 CC=gcc
 
+DIRS=bin obj
+
 SDIR=./src
 BDIR=./bin
 
@@ -9,6 +11,8 @@ IDIR=./include
 ODIR=./obj
 _OBJ= main.o processor.o utils.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ)) 
+
+$(shell mkdir -p $(DIRS))
 
 $(BDIR)/gboy_emu: $(OBJ) 
 	$(CC) $^ -o $@
