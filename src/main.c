@@ -5,27 +5,38 @@
 #include "utils.h"
 
 #define ROM_FILE "roms/tetris.gb"
+#define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
 #define ROM_SIZE 32768
 
 void print_debug_info(proc* p)
 {
   printf("FLAGS\n");
   printf("-----\n");
-  printf("Zero:    %x\n", p->f.z);
-  printf("Sub:     %x\n", p->f.n);
-  printf("Carry:   %x\n", p->f.c);
-  printf("H-carry: %x\n\n", p->f.h);
+  printf("Zero:    %x\n", test_flag(p, ZERO));
+  printf("Sub:     %x\n", test_flag(p, SUBTRACT));
+  printf("H-carry: %x\n", test_flag(p, HALF_CARRY));
+  printf("Carry:   %x\n\n", test_flag(p, CARRY));
 
   printf("REGISTERS\n");
   printf("---------\n");
-  printf("AF: %x\n", p->af.r16);
-  printf("BC: %x\n", p->bc.r16);
-  printf("DE: %x\n", p->de.r16);
-  printf("HL: %x\n", p->hl.r16);
-  printf("PC: %x\n", p->pc);
-  printf("SP: %x\n\n", p->sp);
+  printf("AF: %04x\n", p->af.r16);
+  printf("BC: %04x\n", p->bc.r16);
+  printf("DE: %04x\n", p->de.r16);
+  printf("HL: %04x\n", p->hl.r16);
+  printf("SP: %04x\n", p->sp);
+  printf("PC: %04x\n\n", p->pc);
 
   printf("===========\n");
+}
+
+void init_proc(proc* p)
+{
+  p->af.r16 = 0x01B0;
+  p->bc.r16 = 0x0013;
+  p->de.r16 = 0x00D8;
+  p->hl.r16 = 0x014D;
+  p->sp = 0xFFFE;
+  p->pc = 0x0100;
 }
 
 int main(int argc, char* argv[])
@@ -38,12 +49,19 @@ int main(int argc, char* argv[])
   fclose(fp);
 
   proc p = {0};
+  init_proc(&p);
   p.mem = memory;
 
   // main loop
   while (1)
   {
+    /*
+    print_debug_info(&p);
+    getchar();
+    */
+
     int res = run_operation(&p, memory[p.pc]); 
+
     if (res < 0)
     {
       printf("Stopped at pc: 0x%x\n", p.pc);

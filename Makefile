@@ -23,7 +23,7 @@ $(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/constants.h
 $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(ODIR)/utils.o: $(SDIR)/utils.c $(IDIR)/utils.h
+$(ODIR)/utils.o: $(SDIR)/utils.c $(IDIR)/utils.h $(IDIR)/processor.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean, run

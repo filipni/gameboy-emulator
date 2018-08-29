@@ -28,15 +28,15 @@ uint8_t calculate_carry(int v1, int v2)
 
 int INC_r8(proc* p, uint8_t* r)
 {
-  p->f.h = calculate_half_carry(*r, 1);
+  set_flag(p, HALF_CARRY, calculate_half_carry(*r, 1));
   
   (*r)++;
 
   if (*r == 0)
-    p->f.z = 1;
+    set_flag(p, ZERO, 1);
   else
-    p->f.z = 0;
-  p->f.n = 0;
+    clear_flags(p, ZERO);
+  clear_flags(p, SUBTRACT);
 
   p->pc++;
   return 4;
@@ -54,15 +54,15 @@ int INC_A(proc* p) { return INC_r8(p, &p->af.r8.high); }
 
 int DEC_r8(proc* p, uint8_t* r)
 {
-  p->f.h = calculate_half_carry(*r, -1);
+  set_flag(p, HALF_CARRY, *r < 1);
   
   (*r)--;
 
   if (*r == 0)
-    p->f.z = 1;
+    set_flag(p, ZERO, 1);
   else
-    p->f.z = 0;
-  p->f.n = 1;
+    clear_flags(p, ZERO);
+  set_flag(p, SUBTRACT, 1);
 
   p->pc++;
   return 4;
@@ -362,14 +362,14 @@ int COND_JP(proc* p, uint8_t cond)
   return 12; 
 }
 
-int JP_NZ(proc* p) { return COND_JP(p, !p->f.z); }
-int JP_Z(proc* p) { return COND_JP(p, p->f.z); }
-int JP_NC(proc* p) { return COND_JP(p, !p->f.c); }
-int JP_C(proc* p) { return COND_JP(p, p->f.c); }
+int JP_NZ(proc* p) { return COND_JP(p, !test_flag(p, ZERO)); }
+int JP_Z(proc* p) { return COND_JP(p, test_flag(p, ZERO)); }
+int JP_NC(proc* p) { return COND_JP(p, !test_flag(p, CARRY)); }
+int JP_C(proc* p) { return COND_JP(p, test_flag(p, CARRY)); }
 
 int JR(proc* p)
 {
-  uint16_t adr = p->pc + p->mem[p->pc+1];
+  uint16_t adr = p->pc + 1 + p->mem[p->pc+1];
   p->pc = adr;
   return 12;
 }
@@ -378,7 +378,7 @@ int COND_JR(proc* p, uint8_t cond)
 {
   if (cond)
   {
-    uint16_t adr = p->pc + p->mem[p->pc+1];
+    uint16_t adr = p->pc + 2 + p->mem[p->pc+1];
     p->pc = adr;
     return 12;
   }
@@ -387,31 +387,30 @@ int COND_JR(proc* p, uint8_t cond)
   return 8; 
 }
 
-int JR_NZ(proc* p) { return COND_JR(p, !p->f.z); }
-int JR_Z(proc* p) { return COND_JR(p, p->f.z); }
-int JR_NC(proc* p) { return COND_JR(p, !p->f.c); }
-int JR_C(proc* p) { return COND_JR(p, p->f.c); }
+int JR_NZ(proc* p) { return COND_JR(p, !test_flag(p, ZERO)); }
+int JR_Z(proc* p) { return COND_JR(p, test_flag(p, ZERO)); }
+int JR_NC(proc* p) { return COND_JR(p, !test_flag(p, CARRY)); }
+int JR_C(proc* p) { return COND_JR(p, test_flag(p, CARRY)); }
 
-int XOR(proc* p, uint8_t* reg, uint8_t arg)
+int XOR(proc* p, uint8_t* reg)
 {
-  *reg |= arg;
+  p->af.r8.high ^= *reg ;
 
   // set flags
-  memset(&p->f, 0, sizeof(flags));
-  if (*reg == 0)
-    p->f.z = 1;
+  clear_flags(p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
+  set_flag(p, ZERO, !p->af.r8.high);
   
   p->pc++;
   return 4;
 }
 
-int XOR_B(proc* p) { return XOR(p, &p->bc.r8.high, p->mem[p->pc+1]); }
-int XOR_C(proc* p) { return XOR(p, &p->bc.r8.low, p->mem[p->pc+1]); }
-int XOR_D(proc* p) { return XOR(p, &p->de.r8.high, p->mem[p->pc+1]); }
-int XOR_E(proc* p) { return XOR(p, &p->de.r8.low, p->mem[p->pc+1]); }
-int XOR_H(proc* p) { return XOR(p, &p->hl.r8.high, p->mem[p->pc+1]); }
-int XOR_L(proc* p) { return XOR(p, &p->hl.r8.low, p->mem[p->pc+1]); }
-int XOR_A(proc* p) { return XOR(p, &p->af.r8.high, p->mem[p->pc+1]); }
+int XOR_B(proc* p) { return XOR(p, &p->bc.r8.high); }
+int XOR_C(proc* p) { return XOR(p, &p->bc.r8.low); }
+int XOR_D(proc* p) { return XOR(p, &p->de.r8.high); }
+int XOR_E(proc* p) { return XOR(p, &p->de.r8.low); }
+int XOR_H(proc* p) { return XOR(p, &p->hl.r8.high); }
+int XOR_L(proc* p) { return XOR(p, &p->hl.r8.low); }
+int XOR_A(proc* p) { return XOR(p, &p->af.r8.high); }
 
 int POP(proc* p, uint16_t* r)
 {
@@ -468,10 +467,10 @@ int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
   uint8_t res = *r1 + r2 + carry;
   int carrybits = *r1 ^ r2 ^ res; 
 
-  p->f.n = 0;
-  p->f.z = !res;
-  p->f.h = carrybits & 0x10 == 1;
-  p->f.c = carrybits & 0x100 == 1;
+  clear_flags(p, SUBTRACT);
+  set_flag(p, ZERO, !res);
+  set_flag(p, HALF_CARRY, carrybits & 0x10 == 1);
+  set_flag(p, CARRY, carrybits & 0x100 == 1); 
 
   *r1 = res;
 
@@ -488,23 +487,23 @@ int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); }
 int ADD_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
 int ADD_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, 0); }
 
-int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, p->f.c); } 
-int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, p->f.c); } 
-int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, p->f.c); } 
-int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, p->f.c); } 
-int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, p->f.c); } 
-int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, p->f.c); } 
-int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
-int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
+int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); } 
+int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); } 
+int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); } 
+int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); } 
+int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); } 
+int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); } 
+int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], test_flag(p, CARRY)); }
+int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
 
 int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
-  p->f.n = 1;
-  p->f.c = r2 + carry > *r1;
-  p->f.h = (r2 + carry & 0x0F) > (*r1 & 0x0F);
+  set_flag(p, SUBTRACT, 1);
+  set_flag(p, CARRY, r2 + carry > *r1);
+  set_flag(p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  ); 
 
   *r1 -= r2 + carry;
-  p->f.z = !(*r1);
+  set_flag(p, ZERO, !(*r1));
 
   p->pc++;
   return 4;
@@ -519,22 +518,21 @@ int SUB_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, 0); }
 int SUB_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
 int SUB_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, 0); }
 
-int SBC_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, p->f.c); }
-int SBC_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, p->f.c); }
-int SBC_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, p->f.c); }
-int SBC_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, p->f.c); }
-int SBC_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, p->f.c); }
-int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, p->f.c); }
-int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], p->f.c); }
-int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, p->f.c); }
+int SBC_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
+int SBC_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
+int SBC_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); }
+int SBC_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); }
+int SBC_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); }
+int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
+int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], test_flag(p, CARRY)); }
+int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
 
 int AND(proc* p, uint8_t* r)
 {
   p->af.r8.high &= *r;
-  p->f.z = !p->af.r8.high;
-  p->f.n = 0;
-  p->f.h = 1;
-  p->f.c = 0;
+  set_flag(p, ZERO, !p->af.r8.high);
+  set_flag(p, HALF_CARRY, 1);
+  clear_flags(p, SUBTRACT | CARRY);
   
   p->pc++;
   return 4;
@@ -552,10 +550,8 @@ int AND_A(proc* p) { return AND(p, &p->af.r8.high); }
 int OR(proc* p, uint8_t* r)
 {
   p->af.r8.high |= *r;
-  p->f.z = !p->af.r8.high;
-  p->f.n = 0;
-  p->f.h = 0;
-  p->f.c = 0;
+  set_flag(p, ZERO, !p->af.r8.high);
+  clear_flags(p, SUBTRACT | HALF_CARRY | CARRY);
   
   p->pc++;
   return 4;

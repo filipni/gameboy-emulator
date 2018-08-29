@@ -32,8 +32,6 @@ typedef struct {
   uint16_t sp;
   uint16_t pc;
 
-  flags f;
-  
   char *mem;
 } proc;
 
