@@ -600,6 +600,20 @@ int LDH_A_a8(proc* p)
   return 12;
 }
 
+int CP(proc* p)
+{
+  uint8_t n = p->mem[p->pc+1];
+  uint8_t a = p->af.r8.high;
+
+  set_flag(p, SUBTRACT, 1);
+  set_flag(p, ZERO, a == n);
+  set_flag(p, HALF_CARRY, (a & 0xF) < (n & 0xF));
+  set_flag(p, CARRY, a < n);
+
+  p->pc += 2;
+  return 8;
+}
+
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
   LD_BC,            // 0x01
@@ -855,7 +869,7 @@ op operations[NUM_OPS] = {
   EI,               // 0xfb
   not_implemented,  // 0xfc
   not_implemented,  // 0xfd
-  not_implemented,  // 0xfe
+  CP,               // 0xfe
   RST_38,           // 0xff
 };
 
