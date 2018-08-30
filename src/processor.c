@@ -160,15 +160,15 @@ int LD_d8(proc* p, uint8_t* nn)
   return 8;
 }
 
-int LD_B(proc* p) { LD_d8(p, &p->bc.r8.high); }
-int LD_D(proc* p) { LD_d8(p, &p->de.r8.high); }
-int LD_H(proc* p) { LD_d8(p, &p->hl.r8.high); }
-int LD_mHL(proc* p) { LD_d8(p, (uint8_t*) (p->mem + p->hl.r16)); }
+int LD_B(proc* p) { return LD_d8(p, &p->bc.r8.high); }
+int LD_D(proc* p) { return LD_d8(p, &p->de.r8.high); }
+int LD_H(proc* p) { return LD_d8(p, &p->hl.r8.high); }
+int LD_mHL(proc* p) { return LD_d8(p, (uint8_t*) (p->mem + p->hl.r16)); }
 
-int LD_C(proc* p) { LD_d8(p, &p->bc.r8.low); }
-int LD_E(proc* p) { LD_d8(p, &p->de.r8.low); }
-int LD_L(proc* p) { LD_d8(p, &p->hl.r8.low); }
-int LD_A(proc* p) { LD_d8(p, &p->af.r8.high); }
+int LD_C(proc* p) { return LD_d8(p, &p->bc.r8.low); }
+int LD_E(proc* p) { return LD_d8(p, &p->de.r8.low); }
+int LD_L(proc* p) { return LD_d8(p, &p->hl.r8.low); }
+int LD_A(proc* p) { return LD_d8(p, &p->af.r8.high); }
 
 int LD_d16(proc* p, reg* r)
 {

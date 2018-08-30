@@ -55,10 +55,11 @@ int main(int argc, char* argv[])
   // main loop
   while (1)
   {
-    /*
-    print_debug_info(&p);
-    getchar();
-    */
+    if (p.pc >= 0x29A)
+    {
+       print_debug_info(&p);
+       getchar();
+    }
 
     int res = run_operation(&p, memory[p.pc]); 
 
