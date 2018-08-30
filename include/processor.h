@@ -32,6 +32,8 @@ typedef struct {
   uint16_t sp;
   uint16_t pc;
 
+  uint8_t interrupts_enabled;
+
   char *mem;
 } proc;
 

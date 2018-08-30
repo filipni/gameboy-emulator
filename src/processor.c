@@ -26,6 +26,22 @@ uint8_t calculate_carry(int v1, int v2)
     return 0;
 }
 
+int DI(proc* p)
+{
+  p->interrupts_enabled = 0; 
+
+  p->pc++;
+  return 4;
+}
+
+int EI(proc* p)
+{
+  p->interrupts_enabled = 1; 
+
+  p->pc++;
+  return 4;
+}
+
 int INC_r8(proc* p, uint8_t* r)
 {
   set_flag(p, HALF_CARRY, calculate_half_carry(*r, 1));
@@ -566,6 +582,24 @@ int OR_L(proc* p) { return OR(p, &p->hl.r8.low); }
 int OR_mHL(proc* p) { return OR(p, &p->mem[p->hl.r16]); }
 int OR_A(proc* p) { return OR(p, &p->af.r8.high); }
 
+int LDH_a8_A(proc* p)
+{
+  uint16_t addr = 0xFF00 + p->mem[p->pc+1];
+  p->mem[addr] = p->af.r8.high;
+
+  p->pc += 2; 
+  return 12;
+}
+
+int LDH_A_a8(proc* p)
+{
+  uint16_t addr = 0xFF00 + p->mem[p->pc+1];
+  p->af.r8.high = p->mem[addr];
+
+  p->pc += 2; 
+  return 12;
+}
+
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
   LD_BC,            // 0x01
@@ -791,7 +825,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xdd
   not_implemented,  // 0xde
   RST_18,           // 0xdf
-  not_implemented,  // 0xe0
+  LDH_a8_A,         // 0xe0
   POP_HL,           // 0xe1
   not_implemented,  // 0xe2
   not_implemented,  // 0xe3
@@ -807,10 +841,10 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xed
   not_implemented,  // 0xee
   RST_28,           // 0xef
-  not_implemented,  // 0xf0
+  LDH_A_a8,         // 0xf0
   POP_AF,           // 0xf1
   not_implemented,  // 0xf2
-  not_implemented,  // 0xf3
+  DI,               // 0xf3
   not_implemented,  // 0xf4
   PUSH_AF,          // 0xf5
   not_implemented,  // 0xf6
@@ -818,11 +852,11 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xf8
   not_implemented,  // 0xf9
   not_implemented,  // 0xfa
-  not_implemented,  // 0xfb
+  EI,               // 0xfb
   not_implemented,  // 0xfc
   not_implemented,  // 0xfd
   not_implemented,  // 0xfe
-  RST_38,            // 0xff
+  RST_38,           // 0xff
 };
 
 int run_operation(proc* p, uint8_t op)
