@@ -13,4 +13,4 @@
 #define INTERNAL_RAM        0xFF80  
 #define INTER_ENABLE_REG    0xFFFF
 
-#define MEMORY_SIZE         0xFFFF
+#define MEMORY_SIZE         0x10000
