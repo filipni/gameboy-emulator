@@ -4,6 +4,35 @@
 
 int not_implemented(proc* p) { return -1; }
 
+int test_bit(proc* p, uint8_t* r, uint8_t bit)
+{
+  uint8_t bitmask = 1 << bit;
+  set_flag(p, ZERO, *r & bitmask);
+  clear_flags(p, SUBTRACT);
+  set_flag(p, HALF_CARRY, 1);
+
+  p->pc += 2;
+  return 8;
+}
+
+int set_bit(proc* p, uint8_t* r, uint8_t bit)
+{
+  uint8_t bitmask = 1 << bit;
+  *r |= bitmask;
+
+  p->pc += 2;
+  return 8;
+}
+
+int reset_bit(proc* p, uint8_t* r, uint8_t bit)
+{
+  uint8_t bitmask = 1 << bit;
+  *r &= ~bitmask;
+
+  p->pc += 2;
+  return 8;
+}
+
 uint8_t calculate_half_carry(int v1, int v2)
 {
   int nibble = v1 & 0x0F;
