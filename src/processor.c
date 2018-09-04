@@ -6,8 +6,12 @@ int not_implemented(proc* p) { return -1; }
 
 int RLC(proc* p, uint8_t* r)
 {
-  set_flag(p, CARRY, *r & 0x80);
+  uint8_t msb = *r & 0x80;
+  set_flag(p, CARRY, msb);
   *r <<= 1;
+
+  if (msb)
+    *r |= 0x01; // Set bit 0
 
   set_flag(p, ZERO, !(*r));
   set_flag(p, SUBTRACT, 0);
@@ -28,8 +32,12 @@ int RLC_A(proc* p) { return RLC(p, &p->af.r8.high); }
 
 int RRC(proc* p, uint8_t* r)
 {
-  set_flag(p, CARRY, *r & 0x01);
+  uint8_t lsb = *r & 0x01;
+  set_flag(p, CARRY, lsb);
   *r >>= 1;
+
+  if (lsb)
+    *r |= 0x80; // Set bit 8
 
   set_flag(p, ZERO, !(*r));
   set_flag(p, SUBTRACT, 0);
