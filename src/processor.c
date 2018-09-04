@@ -15,6 +15,15 @@ int swap(proc* p, uint8_t* r)
   return 8;
 }
 
+int swap_B(proc* p) { return swap(p, &p->bc.r8.high); }
+int swap_C(proc* p) { return swap(p, &p->bc.r8.low); }
+int swap_D(proc* p) { return swap(p, &p->de.r8.high); }
+int swap_E(proc* p) { return swap(p, &p->de.r8.low); }
+int swap_H(proc* p) { return swap(p, &p->hl.r8.high); }
+int swap_L(proc* p) { return swap(p, &p->hl.r8.low); }
+int swap_HL(proc* p) { return swap(p, &p->mem[p->hl.u16]); }
+int swap_A(proc* p) { return swap(p, &p->af.r8.high); }
+
 int test_bit(proc* p, uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
@@ -919,14 +928,14 @@ op prefix_operations[NUM_OPS] = {
   not_implemented,  // 0x2d
   not_implemented,  // 0x2e
   not_implemented,  // 0x2f
-  not_implemented,  // 0x30
-  not_implemented,  // 0x31
-  not_implemented,  // 0x32
-  not_implemented,  // 0x33
-  not_implemented,  // 0x34
-  not_implemented,  // 0x35
-  not_implemented,  // 0x36
-  not_implemented,  // 0x37
+  swap_B,           // 0x30
+  swap_C,           // 0x31
+  swap_D,           // 0x32
+  swap_E,           // 0x33
+  swap_H,           // 0x34
+  swap_L,           // 0x35
+  swap_HL,          // 0x36
+  swap_A,           // 0x37
   not_implemented,  // 0x38
   not_implemented,  // 0x39
   not_implemented,  // 0x3a
