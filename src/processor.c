@@ -37,7 +37,7 @@ int RRC(proc* p, uint8_t* r)
   *r >>= 1;
 
   if (lsb)
-    *r |= 0x80; // Set bit 8
+    *r |= 0x80; // Set bit 7
 
   set_flag(p, ZERO, !(*r));
   set_flag(p, SUBTRACT, 0);
@@ -56,7 +56,134 @@ int RRC_L(proc* p) { return RRC(p, &p->hl.r8.low); }
 int RRC_HL(proc* p) { return RRC(p, &p->mem[p->hl.r16]); }
 int RRC_A(proc* p) { return RRC(p, &p->af.r8.high); }
 
-int swap(proc* p, uint8_t* r)
+int RL(proc* p, uint8_t* r)
+{
+  uint8_t msb = *r & 0x80;
+  uint8_t old_carry = test_flag(p, CARRY);
+  set_flag(p, CARRY, msb);
+  *r <<= 1;
+
+  if (old_carry)
+    *r |= 0x01; // Set bit 0
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int RL_B(proc* p) { return RL(p, &p->bc.r8.high); }
+int RL_C(proc* p) { return RL(p, &p->bc.r8.low); }
+int RL_D(proc* p) { return RL(p, &p->de.r8.high); }
+int RL_E(proc* p) { return RL(p, &p->de.r8.low); }
+int RL_H(proc* p) { return RL(p, &p->hl.r8.high); }
+int RL_L(proc* p) { return RL(p, &p->hl.r8.low); }
+int RL_HL(proc* p) { return RL(p, &p->mem[p->hl.r16]); }
+int RL_A(proc* p) { return RL(p, &p->af.r8.high); }
+
+int RR(proc* p, uint8_t* r)
+{
+  uint8_t lsb = *r & 0x01;
+  uint8_t old_carry = test_flag(p, CARRY);
+  set_flag(p, CARRY, lsb);
+  *r >>= 1;
+
+  if (old_carry)
+    *r |= 0x80; // Set bit 7
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int RR_B(proc* p) { return RR(p, &p->bc.r8.high); }
+int RR_C(proc* p) { return RR(p, &p->bc.r8.low); }
+int RR_D(proc* p) { return RR(p, &p->de.r8.high); }
+int RR_E(proc* p) { return RR(p, &p->de.r8.low); }
+int RR_H(proc* p) { return RR(p, &p->hl.r8.high); }
+int RR_L(proc* p) { return RR(p, &p->hl.r8.low); }
+int RR_HL(proc* p) { return RR(p, &p->mem[p->hl.r16]); }
+int RR_A(proc* p) { return RR(p, &p->af.r8.high); }
+
+int SLA(proc* p, uint8_t* r)
+{
+  uint8_t msb = *r & 0x80;
+  set_flag(p, CARRY, msb);
+  *r <<= 1;
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int SLA_B(proc* p) { return SLA(p, &p->bc.r8.high); }
+int SLA_C(proc* p) { return SLA(p, &p->bc.r8.low); }
+int SLA_D(proc* p) { return SLA(p, &p->de.r8.high); }
+int SLA_E(proc* p) { return SLA(p, &p->de.r8.low); }
+int SLA_H(proc* p) { return SLA(p, &p->hl.r8.high); }
+int SLA_L(proc* p) { return SLA(p, &p->hl.r8.low); }
+int SLA_HL(proc* p) { return SLA(p, &p->mem[p->hl.r16]); }
+int SLA_A(proc* p) { return SLA(p, &p->af.r8.high); }
+
+int SRA(proc* p, uint8_t* r)
+{
+  uint8_t lsb = *r & 0x01;
+  uint8_t msb = *r & 0x80;
+  set_flag(p, CARRY, lsb);
+  *r >>= 1;
+
+  if (msb)
+    *r |= 0x80;
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int SRA_B(proc* p) { return SRA(p, &p->bc.r8.high); }
+int SRA_C(proc* p) { return SRA(p, &p->bc.r8.low); }
+int SRA_D(proc* p) { return SRA(p, &p->de.r8.high); }
+int SRA_E(proc* p) { return SRA(p, &p->de.r8.low); }
+int SRA_H(proc* p) { return SRA(p, &p->hl.r8.high); }
+int SRA_L(proc* p) { return SRA(p, &p->hl.r8.low); }
+int SRA_HL(proc* p) { return SRA(p, &p->mem[p->hl.r16]); }
+int SRA_A(proc* p) { return SRA(p, &p->af.r8.high); }
+
+int SRL(proc* p, uint8_t* r)
+{
+  uint8_t lsb = *r & 0x01;
+  set_flag(p, CARRY, lsb);
+  *r >>= 1;
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int SRL_B(proc* p) { return SRL(p, &p->bc.r8.high); }
+int SRL_C(proc* p) { return SRL(p, &p->bc.r8.low); }
+int SRL_D(proc* p) { return SRL(p, &p->de.r8.high); }
+int SRL_E(proc* p) { return SRL(p, &p->de.r8.low); }
+int SRL_H(proc* p) { return SRL(p, &p->hl.r8.high); }
+int SRL_L(proc* p) { return SRL(p, &p->hl.r8.low); }
+int SRL_HL(proc* p) { return SRL(p, &p->mem[p->hl.r16]); }
+int SRL_A(proc* p) { return SRL(p, &p->af.r8.high); }
+
+int SWAP(proc* p, uint8_t* r)
 {
   uint8_t lower_nibble = *r & 0x0F;
   uint8_t upper_nibble = (*r & 0xF0) >> 4;
@@ -67,14 +194,14 @@ int swap(proc* p, uint8_t* r)
   return 8;
 }
 
-int swap_B(proc* p) { return swap(p, &p->bc.r8.high); }
-int swap_C(proc* p) { return swap(p, &p->bc.r8.low); }
-int swap_D(proc* p) { return swap(p, &p->de.r8.high); }
-int swap_E(proc* p) { return swap(p, &p->de.r8.low); }
-int swap_H(proc* p) { return swap(p, &p->hl.r8.high); }
-int swap_L(proc* p) { return swap(p, &p->hl.r8.low); }
-int swap_HL(proc* p) { return swap(p, &p->mem[p->hl.r16]); }
-int swap_A(proc* p) { return swap(p, &p->af.r8.high); }
+int SWAP_B(proc* p) { return SWAP(p, &p->bc.r8.high); }
+int SWAP_C(proc* p) { return SWAP(p, &p->bc.r8.low); }
+int SWAP_D(proc* p) { return SWAP(p, &p->de.r8.high); }
+int SWAP_E(proc* p) { return SWAP(p, &p->de.r8.low); }
+int SWAP_H(proc* p) { return SWAP(p, &p->hl.r8.high); }
+int SWAP_L(proc* p) { return SWAP(p, &p->hl.r8.low); }
+int SWAP_HL(proc* p) { return SWAP(p, &p->mem[p->hl.r16]); }
+int SWAP_A(proc* p) { return SWAP(p, &p->af.r8.high); }
 
 int test_bit(proc* p, uint8_t* r, uint8_t bit)
 {
@@ -948,54 +1075,54 @@ op prefix_operations[NUM_OPS] = {
   RRC_L,            // 0x0d
   RRC_HL,           // 0x0e
   RRC_A,            // 0x0f
-  not_implemented,  // 0x10
-  not_implemented,  // 0x11
-  not_implemented,  // 0x12
-  not_implemented,  // 0x13
-  not_implemented,  // 0x14
-  not_implemented,  // 0x15
-  not_implemented,  // 0x16
-  not_implemented,  // 0x17
-  not_implemented,  // 0x18
-  not_implemented,  // 0x19
-  not_implemented,  // 0x1a
-  not_implemented,  // 0x1b
-  not_implemented,  // 0x1c
-  not_implemented,  // 0x1d
-  not_implemented,  // 0x1e
-  not_implemented,  // 0x1f
-  not_implemented,  // 0x20
-  not_implemented,  // 0x21
-  not_implemented,  // 0x22
-  not_implemented,  // 0x23
-  not_implemented,  // 0x24
-  not_implemented,  // 0x25
-  not_implemented,  // 0x26
-  not_implemented,  // 0x27
-  not_implemented,  // 0x28
-  not_implemented,  // 0x29
-  not_implemented,  // 0x2a
-  not_implemented,  // 0x2b
-  not_implemented,  // 0x2c
-  not_implemented,  // 0x2d
-  not_implemented,  // 0x2e
-  not_implemented,  // 0x2f
-  swap_B,           // 0x30
-  swap_C,           // 0x31
-  swap_D,           // 0x32
-  swap_E,           // 0x33
-  swap_H,           // 0x34
-  swap_L,           // 0x35
-  swap_HL,          // 0x36
-  swap_A,           // 0x37
-  not_implemented,  // 0x38
-  not_implemented,  // 0x39
-  not_implemented,  // 0x3a
-  not_implemented,  // 0x3b
-  not_implemented,  // 0x3c
-  not_implemented,  // 0x3d
-  not_implemented,  // 0x3e
-  not_implemented,  // 0x3f
+  RL_B,             // 0x10
+  RL_C,             // 0x11
+  RL_D,             // 0x12
+  RL_E,             // 0x13
+  RL_H,             // 0x14
+  RL_L,             // 0x15
+  RL_HL,            // 0x16
+  RL_A,             // 0x17
+  RR_B,             // 0x18
+  RR_C,             // 0x19
+  RR_D,             // 0x1a
+  RR_E,             // 0x1b
+  RR_H,             // 0x1c
+  RR_L,             // 0x1d
+  RR_HL,            // 0x1e
+  RR_A,             // 0x1f
+  SLA_B,            // 0x20
+  SLA_C,            // 0x21
+  SLA_D,            // 0x22
+  SLA_E,            // 0x23
+  SLA_H,            // 0x24
+  SLA_L,            // 0x25
+  SLA_HL,           // 0x26
+  SLA_A,            // 0x27
+  SRA_B,            // 0x28
+  SRA_C,            // 0x29
+  SRA_D,            // 0x2a
+  SRA_E,            // 0x2b
+  SRA_H,            // 0x2c
+  SRA_L,            // 0x2d
+  SRA_HL,           // 0x2e
+  SRA_A,            // 0x2f
+  SWAP_B,           // 0x30
+  SWAP_C,           // 0x31
+  SWAP_D,           // 0x32
+  SWAP_E,           // 0x33
+  SWAP_H,           // 0x34
+  SWAP_L,           // 0x35
+  SWAP_HL,          // 0x36
+  SWAP_A,           // 0x37
+  SRL_B,            // 0x38
+  SRL_C,            // 0x39
+  SRL_D,            // 0x3a
+  SRL_E,            // 0x3b
+  SRL_H,            // 0x3c
+  SRL_L,            // 0x3d
+  SRL_HL,           // 0x3e
+  SRL_A,            // 0x3f
   test_bit_0_B,     // 0x40
   test_bit_0_C,     // 0x41
   test_bit_0_D,     // 0x42
