@@ -4,6 +4,28 @@
 
 int not_implemented(proc* p) { return -1; }
 
+int RLC(proc* p, uint8_t* r)
+{
+  set_flag(p, CARRY, *r & 0x80);
+  *r <<= 1;
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int RLC_B(proc* p) { return RLC(p, &p->bc.r8.high); }
+int RLC_C(proc* p) { return RLC(p, &p->bc.r8.low); }
+int RLC_D(proc* p) { return RLC(p, &p->de.r8.high); }
+int RLC_E(proc* p) { return RLC(p, &p->de.r8.low); }
+int RLC_H(proc* p) { return RLC(p, &p->hl.r8.high); }
+int RLC_L(proc* p) { return RLC(p, &p->hl.r8.low); }
+int RLC_HL(proc* p) { return RLC(p, &p->mem[p->hl.r16]); }
+int RLC_A(proc* p) { return RLC(p, &p->af.r8.high); }
+
 int swap(proc* p, uint8_t* r)
 {
   uint8_t lower_nibble = *r & 0x0F;
@@ -21,7 +43,7 @@ int swap_D(proc* p) { return swap(p, &p->de.r8.high); }
 int swap_E(proc* p) { return swap(p, &p->de.r8.low); }
 int swap_H(proc* p) { return swap(p, &p->hl.r8.high); }
 int swap_L(proc* p) { return swap(p, &p->hl.r8.low); }
-int swap_HL(proc* p) { return swap(p, &p->mem[p->hl.u16]); }
+int swap_HL(proc* p) { return swap(p, &p->mem[p->hl.r16]); }
 int swap_A(proc* p) { return swap(p, &p->af.r8.high); }
 
 int test_bit(proc* p, uint8_t* r, uint8_t bit)
