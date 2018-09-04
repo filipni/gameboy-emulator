@@ -26,6 +26,28 @@ int RLC_L(proc* p) { return RLC(p, &p->hl.r8.low); }
 int RLC_HL(proc* p) { return RLC(p, &p->mem[p->hl.r16]); }
 int RLC_A(proc* p) { return RLC(p, &p->af.r8.high); }
 
+int RRC(proc* p, uint8_t* r)
+{
+  set_flag(p, CARRY, *r & 0x01);
+  *r >>= 1;
+
+  set_flag(p, ZERO, !(*r));
+  set_flag(p, SUBTRACT, 0);
+  set_flag(p, HALF_CARRY, 0);
+
+  p->pc += 2;
+  return 8;
+}
+
+int RRC_B(proc* p) { return RRC(p, &p->bc.r8.high); }
+int RRC_C(proc* p) { return RRC(p, &p->bc.r8.low); }
+int RRC_D(proc* p) { return RRC(p, &p->de.r8.high); }
+int RRC_E(proc* p) { return RRC(p, &p->de.r8.low); }
+int RRC_H(proc* p) { return RRC(p, &p->hl.r8.high); }
+int RRC_L(proc* p) { return RRC(p, &p->hl.r8.low); }
+int RRC_HL(proc* p) { return RRC(p, &p->mem[p->hl.r16]); }
+int RRC_A(proc* p) { return RRC(p, &p->af.r8.high); }
+
 int swap(proc* p, uint8_t* r)
 {
   uint8_t lower_nibble = *r & 0x0F;
@@ -902,22 +924,22 @@ int CP(proc* p)
 }
 
 op prefix_operations[NUM_OPS] = {
-  not_implemented,  // 0x00
-  not_implemented,  // 0x01
-  not_implemented,  // 0x02
-  not_implemented,  // 0x03
-  not_implemented,  // 0x04
-  not_implemented,  // 0x05
-  not_implemented,  // 0x06
-  not_implemented,  // 0x07
-  not_implemented,  // 0x08
-  not_implemented,  // 0x09
-  not_implemented,  // 0x0a
-  not_implemented,  // 0x0b
-  not_implemented,  // 0x0c
-  not_implemented,  // 0x0d
-  not_implemented,  // 0x0e
-  not_implemented,  // 0x0f
+  RLC_B,            // 0x00
+  RLC_C,            // 0x01
+  RLC_D,            // 0x02
+  RLC_E,            // 0x03
+  RLC_H,            // 0x04
+  RLC_L,            // 0x05
+  RLC_HL,           // 0x06
+  RLC_A,            // 0x07
+  RRC_B,            // 0x08
+  RRC_C,            // 0x09
+  RRC_D,            // 0x0a
+  RRC_E,            // 0x0b
+  RRC_H,            // 0x0c
+  RRC_L,            // 0x0d
+  RRC_HL,           // 0x0e
+  RRC_A,            // 0x0f
   not_implemented,  // 0x10
   not_implemented,  // 0x11
   not_implemented,  // 0x12
