@@ -4,6 +4,17 @@
 
 int not_implemented(proc* p) { return -1; }
 
+int swap(proc* p, uint8_t* r)
+{
+  uint8_t lower_nibble = *r & 0x0F;
+  uint8_t upper_nibble = (*r & 0xF0) >> 4;
+
+  *r = (lower_nibble << 4) + upper_nibble; 
+  
+  p->pc += 2;
+  return 8;
+}
+
 int test_bit(proc* p, uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
