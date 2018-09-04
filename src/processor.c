@@ -10,7 +10,7 @@ int swap(proc* p, uint8_t* r)
   uint8_t upper_nibble = (*r & 0xF0) >> 4;
 
   *r = (lower_nibble << 4) + upper_nibble; 
-  
+
   p->pc += 2;
   return 8;
 }
@@ -26,6 +26,78 @@ int test_bit(proc* p, uint8_t* r, uint8_t bit)
   return 8;
 }
 
+int test_bit_0_B(proc* p) { return test_bit(p, &p->bc.r8.high, 0); }
+int test_bit_1_B(proc* p) { return test_bit(p, &p->bc.r8.high, 1); }
+int test_bit_2_B(proc* p) { return test_bit(p, &p->bc.r8.high, 2); }
+int test_bit_3_B(proc* p) { return test_bit(p, &p->bc.r8.high, 3); }
+int test_bit_4_B(proc* p) { return test_bit(p, &p->bc.r8.high, 4); }
+int test_bit_5_B(proc* p) { return test_bit(p, &p->bc.r8.high, 5); }
+int test_bit_6_B(proc* p) { return test_bit(p, &p->bc.r8.high, 6); }
+int test_bit_7_B(proc* p) { return test_bit(p, &p->bc.r8.high, 7); }
+
+int test_bit_0_C(proc* p) { return test_bit(p, &p->bc.r8.low, 0); }
+int test_bit_1_C(proc* p) { return test_bit(p, &p->bc.r8.low, 1); }
+int test_bit_2_C(proc* p) { return test_bit(p, &p->bc.r8.low, 2); }
+int test_bit_3_C(proc* p) { return test_bit(p, &p->bc.r8.low, 3); }
+int test_bit_4_C(proc* p) { return test_bit(p, &p->bc.r8.low, 4); }
+int test_bit_5_C(proc* p) { return test_bit(p, &p->bc.r8.low, 5); }
+int test_bit_6_C(proc* p) { return test_bit(p, &p->bc.r8.low, 6); }
+int test_bit_7_C(proc* p) { return test_bit(p, &p->bc.r8.low, 7); }
+
+int test_bit_0_D(proc* p) { return test_bit(p, &p->de.r8.high, 0); }
+int test_bit_1_D(proc* p) { return test_bit(p, &p->de.r8.high, 1); }
+int test_bit_2_D(proc* p) { return test_bit(p, &p->de.r8.high, 2); }
+int test_bit_3_D(proc* p) { return test_bit(p, &p->de.r8.high, 3); }
+int test_bit_4_D(proc* p) { return test_bit(p, &p->de.r8.high, 4); }
+int test_bit_5_D(proc* p) { return test_bit(p, &p->de.r8.high, 5); }
+int test_bit_6_D(proc* p) { return test_bit(p, &p->de.r8.high, 6); }
+int test_bit_7_D(proc* p) { return test_bit(p, &p->de.r8.high, 7); }
+
+int test_bit_0_E(proc* p) { return test_bit(p, &p->de.r8.low, 0); }
+int test_bit_1_E(proc* p) { return test_bit(p, &p->de.r8.low, 1); }
+int test_bit_2_E(proc* p) { return test_bit(p, &p->de.r8.low, 2); }
+int test_bit_3_E(proc* p) { return test_bit(p, &p->de.r8.low, 3); }
+int test_bit_4_E(proc* p) { return test_bit(p, &p->de.r8.low, 4); }
+int test_bit_5_E(proc* p) { return test_bit(p, &p->de.r8.low, 5); }
+int test_bit_6_E(proc* p) { return test_bit(p, &p->de.r8.low, 6); }
+int test_bit_7_E(proc* p) { return test_bit(p, &p->de.r8.low, 7); }
+
+int test_bit_0_A(proc* p) { return test_bit(p, &p->af.r8.high, 0); }
+int test_bit_1_A(proc* p) { return test_bit(p, &p->af.r8.high, 1); }
+int test_bit_2_A(proc* p) { return test_bit(p, &p->af.r8.high, 2); }
+int test_bit_3_A(proc* p) { return test_bit(p, &p->af.r8.high, 3); }
+int test_bit_4_A(proc* p) { return test_bit(p, &p->af.r8.high, 4); }
+int test_bit_5_A(proc* p) { return test_bit(p, &p->af.r8.high, 5); }
+int test_bit_6_A(proc* p) { return test_bit(p, &p->af.r8.high, 6); }
+int test_bit_7_A(proc* p) { return test_bit(p, &p->af.r8.high, 7); }
+
+int test_bit_0_H(proc* p) { return test_bit(p, &p->hl.r8.high, 0); }
+int test_bit_1_H(proc* p) { return test_bit(p, &p->hl.r8.high, 1); }
+int test_bit_2_H(proc* p) { return test_bit(p, &p->hl.r8.high, 2); }
+int test_bit_3_H(proc* p) { return test_bit(p, &p->hl.r8.high, 3); }
+int test_bit_4_H(proc* p) { return test_bit(p, &p->hl.r8.high, 4); }
+int test_bit_5_H(proc* p) { return test_bit(p, &p->hl.r8.high, 5); }
+int test_bit_6_H(proc* p) { return test_bit(p, &p->hl.r8.high, 6); }
+int test_bit_7_H(proc* p) { return test_bit(p, &p->hl.r8.high, 7); }
+
+int test_bit_0_L(proc* p) { return test_bit(p, &p->hl.r8.low, 0); }
+int test_bit_1_L(proc* p) { return test_bit(p, &p->hl.r8.low, 1); }
+int test_bit_2_L(proc* p) { return test_bit(p, &p->hl.r8.low, 2); }
+int test_bit_3_L(proc* p) { return test_bit(p, &p->hl.r8.low, 3); }
+int test_bit_4_L(proc* p) { return test_bit(p, &p->hl.r8.low, 4); }
+int test_bit_5_L(proc* p) { return test_bit(p, &p->hl.r8.low, 5); }
+int test_bit_6_L(proc* p) { return test_bit(p, &p->hl.r8.low, 6); }
+int test_bit_7_L(proc* p) { return test_bit(p, &p->hl.r8.low, 7); }
+
+int test_bit_0_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 0); }
+int test_bit_1_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 1); }
+int test_bit_2_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 2); }
+int test_bit_3_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 3); }
+int test_bit_4_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 4); }
+int test_bit_5_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 5); }
+int test_bit_6_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 6); }
+int test_bit_7_HL(proc* p) { return test_bit(p, &p->mem[p->hl.r16], 7); }
+
 int set_bit(proc* p, uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
@@ -35,6 +107,78 @@ int set_bit(proc* p, uint8_t* r, uint8_t bit)
   return 8;
 }
 
+int set_bit_0_B(proc* p) { return set_bit(p, &p->bc.r8.high, 0); }
+int set_bit_1_B(proc* p) { return set_bit(p, &p->bc.r8.high, 1); }
+int set_bit_2_B(proc* p) { return set_bit(p, &p->bc.r8.high, 2); }
+int set_bit_3_B(proc* p) { return set_bit(p, &p->bc.r8.high, 3); }
+int set_bit_4_B(proc* p) { return set_bit(p, &p->bc.r8.high, 4); }
+int set_bit_5_B(proc* p) { return set_bit(p, &p->bc.r8.high, 5); }
+int set_bit_6_B(proc* p) { return set_bit(p, &p->bc.r8.high, 6); }
+int set_bit_7_B(proc* p) { return set_bit(p, &p->bc.r8.high, 7); }
+
+int set_bit_0_C(proc* p) { return set_bit(p, &p->bc.r8.low, 0); }
+int set_bit_1_C(proc* p) { return set_bit(p, &p->bc.r8.low, 1); }
+int set_bit_2_C(proc* p) { return set_bit(p, &p->bc.r8.low, 2); }
+int set_bit_3_C(proc* p) { return set_bit(p, &p->bc.r8.low, 3); }
+int set_bit_4_C(proc* p) { return set_bit(p, &p->bc.r8.low, 4); }
+int set_bit_5_C(proc* p) { return set_bit(p, &p->bc.r8.low, 5); }
+int set_bit_6_C(proc* p) { return set_bit(p, &p->bc.r8.low, 6); }
+int set_bit_7_C(proc* p) { return set_bit(p, &p->bc.r8.low, 7); }
+
+int set_bit_0_D(proc* p) { return set_bit(p, &p->de.r8.high, 0); }
+int set_bit_1_D(proc* p) { return set_bit(p, &p->de.r8.high, 1); }
+int set_bit_2_D(proc* p) { return set_bit(p, &p->de.r8.high, 2); }
+int set_bit_3_D(proc* p) { return set_bit(p, &p->de.r8.high, 3); }
+int set_bit_4_D(proc* p) { return set_bit(p, &p->de.r8.high, 4); }
+int set_bit_5_D(proc* p) { return set_bit(p, &p->de.r8.high, 5); }
+int set_bit_6_D(proc* p) { return set_bit(p, &p->de.r8.high, 6); }
+int set_bit_7_D(proc* p) { return set_bit(p, &p->de.r8.high, 7); }
+
+int set_bit_0_E(proc* p) { return set_bit(p, &p->de.r8.low, 0); }
+int set_bit_1_E(proc* p) { return set_bit(p, &p->de.r8.low, 1); }
+int set_bit_2_E(proc* p) { return set_bit(p, &p->de.r8.low, 2); }
+int set_bit_3_E(proc* p) { return set_bit(p, &p->de.r8.low, 3); }
+int set_bit_4_E(proc* p) { return set_bit(p, &p->de.r8.low, 4); }
+int set_bit_5_E(proc* p) { return set_bit(p, &p->de.r8.low, 5); }
+int set_bit_6_E(proc* p) { return set_bit(p, &p->de.r8.low, 6); }
+int set_bit_7_E(proc* p) { return set_bit(p, &p->de.r8.low, 7); }
+
+int set_bit_0_A(proc* p) { return set_bit(p, &p->af.r8.high, 0); }
+int set_bit_1_A(proc* p) { return set_bit(p, &p->af.r8.high, 1); }
+int set_bit_2_A(proc* p) { return set_bit(p, &p->af.r8.high, 2); }
+int set_bit_3_A(proc* p) { return set_bit(p, &p->af.r8.high, 3); }
+int set_bit_4_A(proc* p) { return set_bit(p, &p->af.r8.high, 4); }
+int set_bit_5_A(proc* p) { return set_bit(p, &p->af.r8.high, 5); }
+int set_bit_6_A(proc* p) { return set_bit(p, &p->af.r8.high, 6); }
+int set_bit_7_A(proc* p) { return set_bit(p, &p->af.r8.high, 7); }
+
+int set_bit_0_H(proc* p) { return set_bit(p, &p->hl.r8.high, 0); }
+int set_bit_1_H(proc* p) { return set_bit(p, &p->hl.r8.high, 1); }
+int set_bit_2_H(proc* p) { return set_bit(p, &p->hl.r8.high, 2); }
+int set_bit_3_H(proc* p) { return set_bit(p, &p->hl.r8.high, 3); }
+int set_bit_4_H(proc* p) { return set_bit(p, &p->hl.r8.high, 4); }
+int set_bit_5_H(proc* p) { return set_bit(p, &p->hl.r8.high, 5); }
+int set_bit_6_H(proc* p) { return set_bit(p, &p->hl.r8.high, 6); }
+int set_bit_7_H(proc* p) { return set_bit(p, &p->hl.r8.high, 7); }
+
+int set_bit_0_L(proc* p) { return set_bit(p, &p->hl.r8.low, 0); }
+int set_bit_1_L(proc* p) { return set_bit(p, &p->hl.r8.low, 1); }
+int set_bit_2_L(proc* p) { return set_bit(p, &p->hl.r8.low, 2); }
+int set_bit_3_L(proc* p) { return set_bit(p, &p->hl.r8.low, 3); }
+int set_bit_4_L(proc* p) { return set_bit(p, &p->hl.r8.low, 4); }
+int set_bit_5_L(proc* p) { return set_bit(p, &p->hl.r8.low, 5); }
+int set_bit_6_L(proc* p) { return set_bit(p, &p->hl.r8.low, 6); }
+int set_bit_7_L(proc* p) { return set_bit(p, &p->hl.r8.low, 7); }
+
+int set_bit_0_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 0); }
+int set_bit_1_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 1); }
+int set_bit_2_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 2); }
+int set_bit_3_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 3); }
+int set_bit_4_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 4); }
+int set_bit_5_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 5); }
+int set_bit_6_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 6); }
+int set_bit_7_HL(proc* p) { return set_bit(p, &p->mem[p->hl.r16], 7); }
+
 int reset_bit(proc* p, uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
@@ -43,6 +187,78 @@ int reset_bit(proc* p, uint8_t* r, uint8_t bit)
   p->pc += 2;
   return 8;
 }
+
+int reset_bit_0_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 0); }
+int reset_bit_1_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 1); }
+int reset_bit_2_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 2); }
+int reset_bit_3_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 3); }
+int reset_bit_4_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 4); }
+int reset_bit_5_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 5); }
+int reset_bit_6_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 6); }
+int reset_bit_7_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 7); }
+
+int reset_bit_0_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 0); }
+int reset_bit_1_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 1); }
+int reset_bit_2_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 2); }
+int reset_bit_3_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 3); }
+int reset_bit_4_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 4); }
+int reset_bit_5_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 5); }
+int reset_bit_6_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 6); }
+int reset_bit_7_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 7); }
+
+int reset_bit_0_D(proc* p) { return reset_bit(p, &p->de.r8.high, 0); }
+int reset_bit_1_D(proc* p) { return reset_bit(p, &p->de.r8.high, 1); }
+int reset_bit_2_D(proc* p) { return reset_bit(p, &p->de.r8.high, 2); }
+int reset_bit_3_D(proc* p) { return reset_bit(p, &p->de.r8.high, 3); }
+int reset_bit_4_D(proc* p) { return reset_bit(p, &p->de.r8.high, 4); }
+int reset_bit_5_D(proc* p) { return reset_bit(p, &p->de.r8.high, 5); }
+int reset_bit_6_D(proc* p) { return reset_bit(p, &p->de.r8.high, 6); }
+int reset_bit_7_D(proc* p) { return reset_bit(p, &p->de.r8.high, 7); }
+
+int reset_bit_0_E(proc* p) { return reset_bit(p, &p->de.r8.low, 0); }
+int reset_bit_1_E(proc* p) { return reset_bit(p, &p->de.r8.low, 1); }
+int reset_bit_2_E(proc* p) { return reset_bit(p, &p->de.r8.low, 2); }
+int reset_bit_3_E(proc* p) { return reset_bit(p, &p->de.r8.low, 3); }
+int reset_bit_4_E(proc* p) { return reset_bit(p, &p->de.r8.low, 4); }
+int reset_bit_5_E(proc* p) { return reset_bit(p, &p->de.r8.low, 5); }
+int reset_bit_6_E(proc* p) { return reset_bit(p, &p->de.r8.low, 6); }
+int reset_bit_7_E(proc* p) { return reset_bit(p, &p->de.r8.low, 7); }
+
+int reset_bit_0_A(proc* p) { return reset_bit(p, &p->af.r8.high, 0); }
+int reset_bit_1_A(proc* p) { return reset_bit(p, &p->af.r8.high, 1); }
+int reset_bit_2_A(proc* p) { return reset_bit(p, &p->af.r8.high, 2); }
+int reset_bit_3_A(proc* p) { return reset_bit(p, &p->af.r8.high, 3); }
+int reset_bit_4_A(proc* p) { return reset_bit(p, &p->af.r8.high, 4); }
+int reset_bit_5_A(proc* p) { return reset_bit(p, &p->af.r8.high, 5); }
+int reset_bit_6_A(proc* p) { return reset_bit(p, &p->af.r8.high, 6); }
+int reset_bit_7_A(proc* p) { return reset_bit(p, &p->af.r8.high, 7); }
+
+int reset_bit_0_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 0); }
+int reset_bit_1_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 1); }
+int reset_bit_2_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 2); }
+int reset_bit_3_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 3); }
+int reset_bit_4_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 4); }
+int reset_bit_5_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 5); }
+int reset_bit_6_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 6); }
+int reset_bit_7_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 7); }
+
+int reset_bit_0_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 0); }
+int reset_bit_1_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 1); }
+int reset_bit_2_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 2); }
+int reset_bit_3_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 3); }
+int reset_bit_4_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 4); }
+int reset_bit_5_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 5); }
+int reset_bit_6_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 6); }
+int reset_bit_7_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 7); }
+
+int reset_bit_0_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 0); }
+int reset_bit_1_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 1); }
+int reset_bit_2_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 2); }
+int reset_bit_3_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 3); }
+int reset_bit_4_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 4); }
+int reset_bit_5_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 5); }
+int reset_bit_6_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 6); }
+int reset_bit_7_HL(proc* p) { return reset_bit(p, &p->mem[p->hl.r16], 7); }
 
 uint8_t calculate_half_carry(int v1, int v2)
 {
@@ -719,198 +935,198 @@ op prefix_operations[NUM_OPS] = {
   not_implemented,  // 0x3d
   not_implemented,  // 0x3e
   not_implemented,  // 0x3f
-  not_implemented,  // 0x40
-  not_implemented,  // 0x41
-  not_implemented,  // 0x42
-  not_implemented,  // 0x43
-  not_implemented,  // 0x44
-  not_implemented,  // 0x45
-  not_implemented,  // 0x46
-  not_implemented,  // 0x47
-  not_implemented,  // 0x48
-  not_implemented,  // 0x49
-  not_implemented,  // 0x4a
-  not_implemented,  // 0x4b
-  not_implemented,  // 0x4c
-  not_implemented,  // 0x4d
-  not_implemented,  // 0x4e
-  not_implemented,  // 0x4f
-  not_implemented,  // 0x50
-  not_implemented,  // 0x51
-  not_implemented,  // 0x52
-  not_implemented,  // 0x53
-  not_implemented,  // 0x54
-  not_implemented,  // 0x55
-  not_implemented,  // 0x56
-  not_implemented,  // 0x57
-  not_implemented,  // 0x58
-  not_implemented,  // 0x59
-  not_implemented,  // 0x5a
-  not_implemented,  // 0x5b
-  not_implemented,  // 0x5c
-  not_implemented,  // 0x5d
-  not_implemented,  // 0x5e
-  not_implemented,  // 0x5f
-  not_implemented,  // 0x60
-  not_implemented,  // 0x61
-  not_implemented,  // 0x62
-  not_implemented,  // 0x63
-  not_implemented,  // 0x64
-  not_implemented,  // 0x65
-  not_implemented,  // 0x66
-  not_implemented,  // 0x67
-  not_implemented,  // 0x68
-  not_implemented,  // 0x69
-  not_implemented,  // 0x6a
-  not_implemented,  // 0x6b
-  not_implemented,  // 0x6c
-  not_implemented,  // 0x6d
-  not_implemented,  // 0x6e
-  not_implemented,  // 0x6f
-  not_implemented,  // 0x70
-  not_implemented,  // 0x71
-  not_implemented,  // 0x72
-  not_implemented,  // 0x73
-  not_implemented,  // 0x74
-  not_implemented,  // 0x75
-  not_implemented,  // 0x76
-  not_implemented,  // 0x77
-  not_implemented,  // 0x78
-  not_implemented,  // 0x79
-  not_implemented,  // 0x7a
-  not_implemented,  // 0x7b
-  not_implemented,  // 0x7c
-  not_implemented,  // 0x7d
-  not_implemented,  // 0x7e
-  not_implemented,  // 0x7f
-  not_implemented,  // 0x80
-  not_implemented,  // 0x81
-  not_implemented,  // 0x82
-  not_implemented,  // 0x83
-  not_implemented,  // 0x84
-  not_implemented,  // 0x85
-  not_implemented,  // 0x86
-  not_implemented,  // 0x87
-  not_implemented,  // 0x88
-  not_implemented,  // 0x89
-  not_implemented,  // 0x8a
-  not_implemented,  // 0x8b
-  not_implemented,  // 0x8c
-  not_implemented,  // 0x8d
-  not_implemented,  // 0x8e
-  not_implemented,  // 0x8f
-  not_implemented,  // 0x90
-  not_implemented,  // 0x91
-  not_implemented,  // 0x92
-  not_implemented,  // 0x93
-  not_implemented,  // 0x94
-  not_implemented,  // 0x95
-  not_implemented,  // 0x96
-  not_implemented,  // 0x97
-  not_implemented,  // 0x98
-  not_implemented,  // 0x99
-  not_implemented,  // 0x9a
-  not_implemented,  // 0x9b
-  not_implemented,  // 0x9c
-  not_implemented,  // 0x9d
-  not_implemented,  // 0x9e
-  not_implemented,  // 0x9f
-  not_implemented,  // 0xa0
-  not_implemented,  // 0xa1
-  not_implemented,  // 0xa2
-  not_implemented,  // 0xa3
-  not_implemented,  // 0xa4
-  not_implemented,  // 0xa5
-  not_implemented,  // 0xa6
-  not_implemented,  // 0xa7
-  not_implemented,  // 0xa8
-  not_implemented,  // 0xa9
-  not_implemented,  // 0xaa
-  not_implemented,  // 0xab
-  not_implemented,  // 0xac
-  not_implemented,  // 0xad
-  not_implemented,  // 0xae
-  not_implemented,  // 0xaf
-  not_implemented,  // 0xb0
-  not_implemented,  // 0xb1
-  not_implemented,  // 0xb2
-  not_implemented,  // 0xb3
-  not_implemented,  // 0xb4
-  not_implemented,  // 0xb5
-  not_implemented,  // 0xb6
-  not_implemented,  // 0xb7
-  not_implemented,  // 0xb8
-  not_implemented,  // 0xb9
-  not_implemented,  // 0xba
-  not_implemented,  // 0xbb
-  not_implemented,  // 0xbc
-  not_implemented,  // 0xbd
-  not_implemented,  // 0xbe
-  not_implemented,  // 0xbf
-  not_implemented,  // 0xc0
-  not_implemented,  // 0xc1
-  not_implemented,  // 0xc2
-  not_implemented,  // 0xc3
-  not_implemented,  // 0xc4
-  not_implemented,  // 0xc5
-  not_implemented,  // 0xc6
-  not_implemented,  // 0xc7
-  not_implemented,  // 0xc8
-  not_implemented,  // 0xc9
-  not_implemented,  // 0xca
-  not_implemented,  // 0xcb
-  not_implemented,  // 0xcc
-  not_implemented,  // 0xcd
-  not_implemented,  // 0xce
-  not_implemented,  // 0xcf
-  not_implemented,  // 0xd0
-  not_implemented,  // 0xd1
-  not_implemented,  // 0xd2
-  not_implemented,  // 0xd3
-  not_implemented,  // 0xd4
-  not_implemented,  // 0xd5
-  not_implemented,  // 0xd6
-  not_implemented,  // 0xd7
-  not_implemented,  // 0xd8
-  not_implemented,  // 0xd9
-  not_implemented,  // 0xda
-  not_implemented,  // 0xdb
-  not_implemented,  // 0xdc
-  not_implemented,  // 0xdd
-  not_implemented,  // 0xde
-  not_implemented,  // 0xdf
-  not_implemented,  // 0xe0
-  not_implemented,  // 0xe1
-  not_implemented,  // 0xe2
-  not_implemented,  // 0xe3
-  not_implemented,  // 0xe4
-  not_implemented,  // 0xe5
-  not_implemented,  // 0xe6
-  not_implemented,  // 0xe7
-  not_implemented,  // 0xe8
-  not_implemented,  // 0xe9
-  not_implemented,  // 0xea
-  not_implemented,  // 0xeb
-  not_implemented,  // 0xec
-  not_implemented,  // 0xed
-  not_implemented,  // 0xee
-  not_implemented,  // 0xef
-  not_implemented,  // 0xf0
-  not_implemented,  // 0xf1
-  not_implemented,  // 0xf2
-  not_implemented,  // 0xf3
-  not_implemented,  // 0xf4
-  not_implemented,  // 0xf5
-  not_implemented,  // 0xf6
-  not_implemented,  // 0xf7
-  not_implemented,  // 0xf8
-  not_implemented,  // 0xf9
-  not_implemented,  // 0xfa
-  not_implemented,  // 0xfb
-  not_implemented,  // 0xfc
-  not_implemented,  // 0xfd
-  not_implemented,  // 0xfe
-  not_implemented,  // 0xff
+  test_bit_0_B,     // 0x40
+  test_bit_0_C,     // 0x41
+  test_bit_0_D,     // 0x42
+  test_bit_0_E,     // 0x43
+  test_bit_0_H,     // 0x44
+  test_bit_0_L,     // 0x45
+  test_bit_0_HL,    // 0x46
+  test_bit_0_A,     // 0x47
+  test_bit_1_B,     // 0x48
+  test_bit_1_C,     // 0x49
+  test_bit_1_D,     // 0x4a
+  test_bit_1_E,     // 0x4b
+  test_bit_1_H,     // 0x4c
+  test_bit_1_L,     // 0x4d
+  test_bit_1_HL,    // 0x4e
+  test_bit_1_A,     // 0x4f
+  test_bit_2_B,     // 0x50
+  test_bit_2_C,     // 0x51
+  test_bit_2_D,     // 0x52
+  test_bit_2_E,     // 0x53
+  test_bit_2_H,     // 0x54
+  test_bit_2_L,     // 0x55
+  test_bit_2_HL,    // 0x56
+  test_bit_2_A,     // 0x57
+  test_bit_3_B,     // 0x58
+  test_bit_3_C,     // 0x59
+  test_bit_3_D,     // 0x5a
+  test_bit_3_E,     // 0x5b
+  test_bit_3_H,     // 0x5c
+  test_bit_3_L,     // 0x5d
+  test_bit_3_HL,    // 0x5e
+  test_bit_3_A,     // 0x5f
+  test_bit_4_B,     // 0x60
+  test_bit_4_C,     // 0x61
+  test_bit_4_D,     // 0x62
+  test_bit_4_E,     // 0x63
+  test_bit_4_H,     // 0x64
+  test_bit_4_L,     // 0x65
+  test_bit_4_HL,    // 0x66
+  test_bit_4_A,     // 0x67
+  test_bit_5_B,     // 0x68
+  test_bit_5_C,     // 0x69
+  test_bit_5_D,     // 0x6a
+  test_bit_5_E,     // 0x6b
+  test_bit_5_H,     // 0x6c
+  test_bit_5_L,     // 0x6d
+  test_bit_5_HL,    // 0x6e
+  test_bit_5_A,     // 0x6f
+  test_bit_6_B,     // 0x70
+  test_bit_6_C,     // 0x71
+  test_bit_6_D,     // 0x72
+  test_bit_6_E,     // 0x73
+  test_bit_6_H,     // 0x74
+  test_bit_6_L,     // 0x75
+  test_bit_6_HL,    // 0x76
+  test_bit_6_A,     // 0x77
+  test_bit_7_B,     // 0x78
+  test_bit_7_C,     // 0x79
+  test_bit_7_D,     // 0x7a
+  test_bit_7_E,     // 0x7b
+  test_bit_7_H,     // 0x7c
+  test_bit_7_L,     // 0x7d
+  test_bit_7_HL,    // 0x7e
+  test_bit_7_A,     // 0x7f
+  reset_bit_0_B,    // 0x80
+  reset_bit_0_C,    // 0x81
+  reset_bit_0_D,    // 0x82
+  reset_bit_0_E,    // 0x83
+  reset_bit_0_H,    // 0x84
+  reset_bit_0_L,    // 0x85
+  reset_bit_0_HL,   // 0x86
+  reset_bit_0_A,    // 0x87
+  reset_bit_1_B,    // 0x88
+  reset_bit_1_C,    // 0x89
+  reset_bit_1_D,    // 0x8a
+  reset_bit_1_E,    // 0x8b
+  reset_bit_1_H,    // 0x8c
+  reset_bit_1_L,    // 0x8d
+  reset_bit_1_HL,   // 0x8e
+  reset_bit_1_A,    // 0x8f
+  reset_bit_2_B,    // 0x90
+  reset_bit_2_C,    // 0x91
+  reset_bit_2_D,    // 0x92
+  reset_bit_2_E,    // 0x93
+  reset_bit_2_H,    // 0x94
+  reset_bit_2_L,    // 0x95
+  reset_bit_2_HL,   // 0x96
+  reset_bit_2_A,    // 0x97
+  reset_bit_3_B,    // 0x98
+  reset_bit_3_C,    // 0x99
+  reset_bit_3_D,    // 0x9a
+  reset_bit_3_E,    // 0x9b
+  reset_bit_3_H,    // 0x9c
+  reset_bit_3_L,    // 0x9d
+  reset_bit_3_HL,   // 0x9e
+  reset_bit_3_A,    // 0x9f
+  reset_bit_4_B,    // 0xa0
+  reset_bit_4_C,    // 0xa1
+  reset_bit_4_D,    // 0xa2
+  reset_bit_4_E,    // 0xa3
+  reset_bit_4_H,    // 0xa4
+  reset_bit_4_L,    // 0xa5
+  reset_bit_4_HL,   // 0xa6
+  reset_bit_4_A,    // 0xa7
+  reset_bit_5_B,    // 0xa8
+  reset_bit_5_C,    // 0xa9
+  reset_bit_5_D,    // 0xaa
+  reset_bit_5_E,    // 0xab
+  reset_bit_5_H,    // 0xac
+  reset_bit_5_L,    // 0xad
+  reset_bit_5_HL,   // 0xae
+  reset_bit_5_A,    // 0xaf
+  reset_bit_6_B,    // 0xb0
+  reset_bit_6_C,    // 0xb1
+  reset_bit_6_D,    // 0xb2
+  reset_bit_6_E,    // 0xb3
+  reset_bit_6_H,    // 0xb4
+  reset_bit_6_L,    // 0xb5
+  reset_bit_6_HL,   // 0xb6
+  reset_bit_6_A,    // 0xb7
+  reset_bit_7_B,    // 0xb8
+  reset_bit_7_C,    // 0xb9
+  reset_bit_7_D,    // 0xba
+  reset_bit_7_E,    // 0xbb
+  reset_bit_7_H,    // 0xbc
+  reset_bit_7_L,    // 0xbd
+  reset_bit_7_HL,   // 0xbe
+  reset_bit_7_A,    // 0xbf
+  set_bit_0_B,      // 0xc0
+  set_bit_0_C,      // 0xc1
+  set_bit_0_D,      // 0xc2
+  set_bit_0_E,      // 0xc3
+  set_bit_0_H,      // 0xc4
+  set_bit_0_L,      // 0xc5
+  set_bit_0_HL,     // 0xc6
+  set_bit_0_A,      // 0xc7
+  set_bit_1_B,      // 0xc8
+  set_bit_1_C,      // 0xc9
+  set_bit_1_D,      // 0xca
+  set_bit_1_E,      // 0xcb
+  set_bit_1_H,      // 0xcc
+  set_bit_1_L,      // 0xcd
+  set_bit_1_HL,     // 0xce
+  set_bit_1_A,      // 0xcf
+  set_bit_2_B,      // 0xd0
+  set_bit_2_C,      // 0xd1
+  set_bit_2_D,      // 0xd2
+  set_bit_2_E,      // 0xd3
+  set_bit_2_H,      // 0xd4
+  set_bit_2_L,      // 0xd5
+  set_bit_2_HL,     // 0xd6
+  set_bit_2_A,      // 0xd7
+  set_bit_3_B,      // 0xd8
+  set_bit_3_C,      // 0xd9
+  set_bit_3_D,      // 0xda
+  set_bit_3_E,      // 0xdb
+  set_bit_3_H,      // 0xdc
+  set_bit_3_L,      // 0xdd
+  set_bit_3_HL,     // 0xde
+  set_bit_3_A,      // 0xdf
+  set_bit_4_B,      // 0xe0
+  set_bit_4_C,      // 0xe1
+  set_bit_4_D,      // 0xe2
+  set_bit_4_E,      // 0xe3
+  set_bit_4_H,      // 0xe4
+  set_bit_4_L,      // 0xe5
+  set_bit_4_HL,     // 0xe6
+  set_bit_4_A,      // 0xe7
+  set_bit_5_B,      // 0xe8
+  set_bit_5_C,      // 0xe9
+  set_bit_5_D,      // 0xea
+  set_bit_5_E,      // 0xeb
+  set_bit_5_H,      // 0xec
+  set_bit_5_L,      // 0xed
+  set_bit_5_HL,     // 0xee
+  set_bit_5_A,      // 0xef
+  set_bit_6_B,      // 0xf0
+  set_bit_6_C,      // 0xf1
+  set_bit_6_D,      // 0xf2
+  set_bit_6_E,      // 0xf3
+  set_bit_6_H,      // 0xf4
+  set_bit_6_L,      // 0xf5
+  set_bit_6_HL,     // 0xf6
+  set_bit_6_A,      // 0xf7
+  set_bit_7_B,      // 0xf8
+  set_bit_7_C,      // 0xf9
+  set_bit_7_D,      // 0xfa
+  set_bit_7_E,      // 0xfb
+  set_bit_7_H,      // 0xfc
+  set_bit_7_L,      // 0xfd
+  set_bit_7_HL,     // 0xfe
+  set_bit_7_A,      // 0xff
 };
 
 op operations[NUM_OPS] = { 
