@@ -7,7 +7,7 @@ int not_implemented(proc* p) { return -1; }
 int test_bit(proc* p, uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
-  set_flag(p, ZERO, *r & bitmask);
+  set_flag(p, ZERO, !(*r & bitmask));
   clear_flags(p, SUBTRACT);
   set_flag(p, HALF_CARRY, 1);
 
@@ -900,7 +900,7 @@ op prefix_operations[NUM_OPS] = {
   not_implemented,  // 0xfd
   not_implemented,  // 0xfe
   not_implemented,  // 0xff
-}
+};
 
 op operations[NUM_OPS] = { 
   NOP,              // 0x00
