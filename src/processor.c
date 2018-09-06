@@ -772,6 +772,18 @@ int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
   return 4;
 }
 
+int LD_a16_SP(proc* p)
+{
+  uint8_t low_byte = p->mem[p->pc+1];
+  uint8_t high_byte = p->mem[p->pc+2];
+  uint16_t addr = generate_address(low_byte, high_byte);
+
+  p->mem[addr] = p->sp;
+
+  p->pc += 3;
+  return 20;
+}
+
 int LD_B_B(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.high); }
 int LD_B_C(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.low); }
 int LD_B_D(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.high); }
@@ -1354,7 +1366,7 @@ op operations[NUM_OPS] = {
   DEC_B,            // 0x05
   LD_B,             // 0x06
   RLCA,             // 0x07
-  not_implemented,  // 0x08
+  LD_a16_SP,        // 0x08
   not_implemented,  // 0x09
   LD_A_mBC,         // 0x0a
   DEC_BC,           // 0x0b
