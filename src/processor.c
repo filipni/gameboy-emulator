@@ -4,6 +4,15 @@
 
 int not_implemented(proc* p) { return -1; }
 
+int RET(proc* p)
+{
+  uint16_t addr = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
+
+  p->sp += 2;
+  p->pc = addr; 
+  return 16;
+}
+
 int RLC(proc* p, uint8_t* r)
 {
   uint8_t msb = *r & 0x80;
@@ -933,7 +942,7 @@ int PUSH(proc* p, reg* r)
   p->mem[p->sp+1] = r->r8.high;
   p->mem[p->sp+2] = r->r8.low;
 
-  p->sp += 2;
+  p->sp -= 2;
   p->pc += 1;
   return 16;
 }
