@@ -892,9 +892,9 @@ int JR_Z(proc* p) { return COND_JR(p, test_flag(p, ZERO)); }
 int JR_NC(proc* p) { return COND_JR(p, !test_flag(p, CARRY)); }
 int JR_C(proc* p) { return COND_JR(p, test_flag(p, CARRY)); }
 
-int XOR(proc* p, uint8_t* reg)
+int XOR(proc* p, uint8_t reg)
 {
-  p->af.r8.high ^= *reg ;
+  p->af.r8.high ^= reg ;
 
   // set flags
   clear_flags(p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
@@ -904,13 +904,14 @@ int XOR(proc* p, uint8_t* reg)
   return 4;
 }
 
-int XOR_B(proc* p) { return XOR(p, &p->bc.r8.high); }
-int XOR_C(proc* p) { return XOR(p, &p->bc.r8.low); }
-int XOR_D(proc* p) { return XOR(p, &p->de.r8.high); }
-int XOR_E(proc* p) { return XOR(p, &p->de.r8.low); }
-int XOR_H(proc* p) { return XOR(p, &p->hl.r8.high); }
-int XOR_L(proc* p) { return XOR(p, &p->hl.r8.low); }
-int XOR_A(proc* p) { return XOR(p, &p->af.r8.high); }
+int XOR_B(proc* p) { return XOR(p, p->bc.r8.high); }
+int XOR_C(proc* p) { return XOR(p, p->bc.r8.low); }
+int XOR_D(proc* p) { return XOR(p, p->de.r8.high); }
+int XOR_E(proc* p) { return XOR(p, p->de.r8.low); }
+int XOR_H(proc* p) { return XOR(p, p->hl.r8.high); }
+int XOR_L(proc* p) { return XOR(p, p->hl.r8.low); }
+int XOR_HL(proc* p) { return XOR(p, p->mem[p->hl.r16]); }
+int XOR_A(proc* p) { return XOR(p, p->af.r8.high); }
 
 int POP(proc* p, uint16_t* r)
 {
@@ -1551,7 +1552,7 @@ op operations[NUM_OPS] = {
   XOR_E,            // 0xab
   XOR_H,            // 0xac
   XOR_L,            // 0xad
-  not_implemented,  // 0xae
+  XOR_HL,           // 0xae
   XOR_A,            // 0xaf
   OR_B,             // 0xb0
   OR_C,             // 0xb1
