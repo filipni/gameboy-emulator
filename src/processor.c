@@ -1084,19 +1084,38 @@ int LDH_A_a8(proc* p)
   return 12;
 }
 
-int CP(proc* p)
+int CP(proc* p, uint8_t r)
 {
-  uint8_t n = p->mem[p->pc+1];
   uint8_t a = p->af.r8.high;
 
   set_flag(p, SUBTRACT, 1);
-  set_flag(p, ZERO, a == n);
-  set_flag(p, HALF_CARRY, (a & 0xF) < (n & 0xF));
-  set_flag(p, CARRY, a < n);
+  set_flag(p, ZERO, a == r);
+  set_flag(p, HALF_CARRY, (a & 0xF) < (r & 0xF));
+  set_flag(p, CARRY, a < r);
+}
 
+int CP_d8(proc* p)
+{
+  CP(p, p->mem[p->pc+1]);
   p->pc += 2;
   return 8;
 }
+
+int CP_reg(proc* p, uint8_t r)
+{
+  CP(p, r); 
+  p->pc += 1;
+  return 4;
+}
+
+int CP_B(proc* p) { return CP_reg(p, p->bc.r8.high); }
+int CP_C(proc* p) { return CP_reg(p, p->bc.r8.low); }
+int CP_D(proc* p) { return CP_reg(p, p->de.r8.high); }
+int CP_E(proc* p) { return CP_reg(p, p->de.r8.low); }
+int CP_H(proc* p) { return CP_reg(p, p->hl.r8.high); }
+int CP_L(proc* p) { return CP_reg(p, p->hl.r8.low); }
+int CP_HL(proc* p) { return CP_reg(p, p->mem[p->hl.r16]); }
+int CP_A(proc* p) { return CP_reg(p, p->af.r8.high); }
 
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
@@ -1542,14 +1561,14 @@ op operations[NUM_OPS] = {
   OR_L,             // 0xb5
   OR_mHL,           // 0xb6
   OR_A,             // 0xb7
-  not_implemented,  // 0xb8
-  not_implemented,  // 0xb9
-  not_implemented,  // 0xba
-  not_implemented,  // 0xbb
-  not_implemented,  // 0xbc
-  not_implemented,  // 0xbd
-  not_implemented,  // 0xbe
-  not_implemented,  // 0xbf
+  CP_B,             // 0xb8
+  CP_C,             // 0xb9
+  CP_D,             // 0xba
+  CP_E,             // 0xbb
+  CP_H,             // 0xbc
+  CP_L,             // 0xbd
+  CP_HL,            // 0xbe
+  CP_A,             // 0xbf
   not_implemented,  // 0xc0
   POP_BC,           // 0xc1
   JP_NZ,            // 0xc2
@@ -1612,7 +1631,7 @@ op operations[NUM_OPS] = {
   EI,               // 0xfb
   not_implemented,  // 0xfc
   not_implemented,  // 0xfd
-  CP,               // 0xfe
+  CP_d8,            // 0xfe
   RST_38,           // 0xff
 };
 
