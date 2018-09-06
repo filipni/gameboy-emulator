@@ -110,6 +110,34 @@ int RR_L(proc* p) { return RR(p, &p->hl.r8.low); }
 int RR_HL(proc* p) { return RR(p, &p->mem[p->hl.r16]); }
 int RR_A(proc* p) { return RR(p, &p->af.r8.high); }
 
+int RLCA(proc* p)
+{
+  int res = RLC(p, &p->af.r8.high);
+  set_flag(p, ZERO, 0);
+  return res;
+}
+
+int RLA(proc* p)
+{
+  int res = RL(p, &p->af.r8.high);
+  set_flag(p, ZERO, 0);
+  return res;
+}
+
+int RRCA(proc* p)
+{
+  int res = RRC(p, &p->af.r8.high);
+  set_flag(p, ZERO, 0);
+  return res;
+}
+
+int RRA(proc* p)
+{
+  int res = RR(p, &p->af.r8.high);
+  set_flag(p, ZERO, 0);
+  return res;
+}
+
 int SLA(proc* p, uint8_t* r)
 {
   uint8_t msb = *r & 0x80;
@@ -1325,7 +1353,7 @@ op operations[NUM_OPS] = {
   INC_B,            // 0x04
   DEC_B,            // 0x05
   LD_B,             // 0x06
-  not_implemented,  // 0x07
+  RLCA,             // 0x07
   not_implemented,  // 0x08
   not_implemented,  // 0x09
   LD_A_mBC,         // 0x0a
@@ -1333,7 +1361,7 @@ op operations[NUM_OPS] = {
   INC_C,            // 0x0c
   DEC_C,            // 0x0d
   LD_C,             // 0x0e
-  not_implemented,  // 0x0f
+  RRCA,             // 0x0f
   not_implemented,  // 0x10
   LD_DE,            // 0x11
   LD_mDE_A,         // 0x12
@@ -1341,7 +1369,7 @@ op operations[NUM_OPS] = {
   INC_D,            // 0x14
   DEC_D,            // 0x15
   LD_D,             // 0x16
-  not_implemented,  // 0x17
+  RLA,              // 0x17
   JR,               // 0x18
   not_implemented,  // 0x19
   LD_A_mDE,         // 0x1a
@@ -1349,7 +1377,7 @@ op operations[NUM_OPS] = {
   INC_E,            // 0x1c
   DEC_E,            // 0x1d
   LD_E,             // 0x1e
-  not_implemented,  // 0x1f
+  RRA,              // 0x1f
   JR_NZ,            // 0x20
   LD_HL,            // 0x21
   LD_mHL_A_inc,     // 0x22
