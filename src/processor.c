@@ -1146,6 +1146,37 @@ int CP_L(proc* p) { return CP_reg(p, p->hl.r8.low); }
 int CP_HL(proc* p) { return CP_reg(p, p->mem[p->hl.r16]); }
 int CP_A(proc* p) { return CP_reg(p, p->af.r8.high); }
 
+int DAA(proc* p)
+{
+  uint8_t* acc = &p->af.r8.high;
+
+  // After an addition, adjust if (half-)carry occurred or if result is out of bounds
+  if (!test_flag(p, SUBTRACT))
+  {
+    if (test_flag(p, CARRY) || *acc > 0x99)
+    {
+      *acc += 0x60;
+      set_flag(p, CARRY, 1);
+    }
+    if (test_flag(p, HALF_CARRY) || (*acc & 0x0f) > 0x09)
+      *acc += 0x6;
+  }
+  // After a subtraction, only adjust if (half-)carry occurred
+  else
+  {
+      if (test_flag(p, CARRY))
+        *acc -= 0x60;
+      if (test_flag(p, HALF_CARRY))
+        *acc -= 0x6;
+  }
+
+  set_flag(p, ZERO, *acc == 0);
+  clear_flags(p, HALF_CARRY);
+
+  p->pc++;
+  return 4;
+}
+
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
   RLC_C,            // 0x01
@@ -1445,7 +1476,7 @@ op operations[NUM_OPS] = {
   INC_H,            // 0x24
   DEC_H,            // 0x25
   LD_H,             // 0x26
-  not_implemented,  // 0x27
+  DAA,              // 0x27
   JR_Z,             // 0x28
   ADD_HL_HL,        // 0x29
   LD_A_mHL_inc,     // 0x2a
