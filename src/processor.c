@@ -9,7 +9,7 @@ int RET(proc* p)
   uint16_t addr = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
 
   p->sp += 2;
-  p->pc = addr; 
+  p->pc = addr;
   return 16;
 }
 
@@ -225,7 +225,7 @@ int SWAP(proc* p, uint8_t* r)
   uint8_t lower_nibble = *r & 0x0F;
   uint8_t upper_nibble = (*r & 0xF0) >> 4;
 
-  *r = (lower_nibble << 4) + upper_nibble; 
+  *r = (lower_nibble << 4) + upper_nibble;
 
   p->pc += 2;
   return 8;
@@ -509,7 +509,7 @@ uint8_t calculate_carry(int v1, int v2)
 
 int DI(proc* p)
 {
-  p->interrupts_enabled = 0; 
+  p->interrupts_enabled = 0;
 
   p->pc++;
   return 4;
@@ -517,7 +517,7 @@ int DI(proc* p)
 
 int EI(proc* p)
 {
-  p->interrupts_enabled = 1; 
+  p->interrupts_enabled = 1;
 
   p->pc++;
   return 4;
@@ -526,7 +526,7 @@ int EI(proc* p)
 int INC_r8(proc* p, uint8_t* r)
 {
   set_flag(p, HALF_CARRY, calculate_half_carry(*r, 1));
-  
+
   (*r)++;
 
   if (*r == 0)
@@ -552,7 +552,7 @@ int INC_A(proc* p) { return INC_r8(p, &p->af.r8.high); }
 int DEC_r8(proc* p, uint8_t* r)
 {
   set_flag(p, HALF_CARRY, *r < 1);
-  
+
   (*r)--;
 
   if (*r == 0)
@@ -575,7 +575,7 @@ int DEC_E(proc* p) { return DEC_r8(p, &p->de.r8.low); }
 int DEC_L(proc* p) { return DEC_r8(p, &p->hl.r8.low); }
 int DEC_A(proc* p) { return DEC_r8(p, &p->af.r8.high); }
 
-int LD_mHL_A_inc(proc* p) 
+int LD_mHL_A_inc(proc* p)
 {
   p->mem[p->hl.r16++] = p->af.r8.high;
 
@@ -583,7 +583,7 @@ int LD_mHL_A_inc(proc* p)
   return 8;
 }
 
-int LD_mHL_A_dec(proc* p) 
+int LD_mHL_A_dec(proc* p)
 {
   p->mem[p->hl.r16--] = p->af.r8.high;
 
@@ -591,9 +591,9 @@ int LD_mHL_A_dec(proc* p)
   return 8;
 }
 
-int LD_A_mHL_inc(proc* p) 
+int LD_A_mHL_inc(proc* p)
 {
-  p->af.r8.high = p->mem[p->hl.r16++];  
+  p->af.r8.high = p->mem[p->hl.r16++];
 
   p->pc++;
   return 8;
@@ -636,7 +636,7 @@ int DEC_SP(proc* p) { return DEC(p, &p->sp); }
 int LD_d8(proc* p, uint8_t* nn)
 {
   *nn = p->mem[p->pc+1];
- 
+
   p->pc += 2;
   return 8;
 }
@@ -653,8 +653,8 @@ int LD_A(proc* p) { return LD_d8(p, &p->af.r8.high); }
 
 int LD_d16(proc* p, reg* r)
 {
-  r->r8.low = p->mem[p->pc+1]; 
-  r->r8.high = p->mem[p->pc+2]; 
+  r->r8.low = p->mem[p->pc+1];
+  r->r8.high = p->mem[p->pc+2];
 
   p->pc += 3;
   return 12;
@@ -663,19 +663,19 @@ int LD_d16(proc* p, reg* r)
 int LD_BC(proc* p) { return LD_d16(p, &p->bc); }
 int LD_DE(proc* p) { return LD_d16(p, &p->de); }
 int LD_HL(proc* p) { return LD_d16(p, &p->hl); }
-int LD_SP(proc* p) 
-{ 
-  uint8_t low = p->mem[p->pc+1]; 
-  uint8_t high = p->mem[p->pc+2]; 
-  
+int LD_SP(proc* p)
+{
+  uint8_t low = p->mem[p->pc+1];
+  uint8_t high = p->mem[p->pc+2];
+
   p->sp = generate_address(low, high);
 
   p->pc += 3;
   return 12;
 }
 
-int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem) 
-{ 
+int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem)
+{
   *reg = *mem;
 
   p->pc++;
@@ -685,92 +685,92 @@ int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem)
 int LD_mBC_A(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->bc.r16);
-  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high);
 }
 int LD_mDE_A(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high);
 }
 int LD_A_mBC(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->bc.r16);
-  return LD_reg_mem(p, &p->af.r8.high, mem_pos); 
+  return LD_reg_mem(p, &p->af.r8.high, mem_pos);
 }
 int LD_A_mDE(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, &p->af.r8.high, mem_pos); 
+  return LD_reg_mem(p, &p->af.r8.high, mem_pos);
 }
 int LD_B_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->bc.r8.high, mem_pos); 
+  return LD_reg_mem(p, &p->bc.r8.high, mem_pos);
 }
 int LD_D_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->de.r8.high, mem_pos); 
+  return LD_reg_mem(p, &p->de.r8.high, mem_pos);
 }
 int LD_H_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->hl.r8.high, mem_pos); 
+  return LD_reg_mem(p, &p->hl.r8.high, mem_pos);
 }
 int LD_C_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->bc.r8.low, mem_pos); 
+  return LD_reg_mem(p, &p->bc.r8.low, mem_pos);
 }
 int LD_E_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->de.r8.low, mem_pos); 
+  return LD_reg_mem(p, &p->de.r8.low, mem_pos);
 }
 int LD_L_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->hl.r8.low, mem_pos); 
+  return LD_reg_mem(p, &p->hl.r8.low, mem_pos);
 }
 int LD_A_mHL(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->hl.r16);
-  return LD_reg_mem(p, &p->af.r8.low, mem_pos); 
+  return LD_reg_mem(p, &p->af.r8.low, mem_pos);
 }
 int LD_mHL_B(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->bc.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->bc.r8.high);
 }
 int LD_mHL_C(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->bc.r8.low); 
+  return LD_reg_mem(p, mem_pos, &p->bc.r8.low);
 }
 int LD_mHL_D(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->de.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->de.r8.high);
 }
 int LD_mHL_E(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->de.r8.low); 
+  return LD_reg_mem(p, mem_pos, &p->de.r8.low);
 }
 int LD_mHL_H(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->hl.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->hl.r8.high);
 }
 int LD_mHL_L(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->hl.r8.low); 
+  return LD_reg_mem(p, mem_pos, &p->hl.r8.low);
 }
 int LD_mHL_A(proc* p)
 {
   uint8_t* mem_pos = (uint8_t*) (p->mem + p->de.r16);
-  return LD_reg_mem(p, mem_pos, &p->af.r8.high); 
+  return LD_reg_mem(p, mem_pos, &p->af.r8.high);
 }
 
 int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
@@ -868,7 +868,7 @@ int COND_JP(proc* p, uint8_t cond)
   }
 
   p->pc += 3;
-  return 12; 
+  return 12;
 }
 
 int JP_NZ(proc* p) { return COND_JP(p, !test_flag(p, ZERO)); }
@@ -893,7 +893,7 @@ int COND_JR(proc* p, uint8_t cond)
   }
 
   p->pc += 2;
-  return 8; 
+  return 8;
 }
 
 int JR_NZ(proc* p) { return COND_JR(p, !test_flag(p, ZERO)); }
@@ -908,7 +908,7 @@ int XOR(proc* p, uint8_t reg)
   // set flags
   clear_flags(p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
   set_flag(p, ZERO, !p->af.r8.high);
-  
+
   p->pc++;
   return 4;
 }
@@ -926,7 +926,7 @@ int POP(proc* p, uint16_t* r)
 {
   uint16_t val = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
   *r = val;
-  
+
   p->sp += 2;
   p->pc += 1;
   return 12;
@@ -994,12 +994,12 @@ int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
 
   uint8_t res = *r1 + r2 + carry;
-  int carrybits = *r1 ^ r2 ^ res; 
+  int carrybits = *r1 ^ r2 ^ res;
 
   clear_flags(p, SUBTRACT);
   set_flag(p, ZERO, !res);
   set_flag(p, HALF_CARRY, carrybits & 0x10 == 1);
-  set_flag(p, CARRY, carrybits & 0x100 == 1); 
+  set_flag(p, CARRY, carrybits & 0x100 == 1);
 
   *r1 = res;
 
@@ -1007,21 +1007,21 @@ int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
   return 4;
 }
 
-int ADD_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, 0); } 
-int ADD_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, 0); } 
-int ADD_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, 0); } 
-int ADD_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, 0); } 
-int ADD_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, 0); } 
-int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); } 
+int ADD_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, 0); }
+int ADD_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, 0); }
+int ADD_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, 0); }
+int ADD_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, 0); }
+int ADD_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, 0); }
+int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); }
 int ADD_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
 int ADD_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, 0); }
 
-int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); } 
-int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); } 
-int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); } 
-int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); } 
-int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); } 
-int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); } 
+int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
+int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
+int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); }
+int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); }
+int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); }
+int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
 int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], test_flag(p, CARRY)); }
 int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
 
@@ -1029,7 +1029,7 @@ int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
   set_flag(p, SUBTRACT, 1);
   set_flag(p, CARRY, r2 + carry > *r1);
-  set_flag(p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  ); 
+  set_flag(p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  );
 
   *r1 -= r2 + carry;
   set_flag(p, ZERO, !(*r1));
@@ -1062,7 +1062,7 @@ int AND(proc* p, uint8_t* r)
   set_flag(p, ZERO, !p->af.r8.high);
   set_flag(p, HALF_CARRY, 1);
   clear_flags(p, SUBTRACT | CARRY);
-  
+
   p->pc++;
   return 4;
 }
@@ -1081,7 +1081,7 @@ int OR(proc* p, uint8_t* r)
   p->af.r8.high |= *r;
   set_flag(p, ZERO, !p->af.r8.high);
   clear_flags(p, SUBTRACT | HALF_CARRY | CARRY);
-  
+
   p->pc++;
   return 4;
 }
@@ -1100,7 +1100,7 @@ int LDH_a8_A(proc* p)
   uint16_t addr = 0xFF00 + p->mem[p->pc+1];
   p->mem[addr] = p->af.r8.high;
 
-  p->pc += 2; 
+  p->pc += 2;
   return 12;
 }
 
@@ -1109,7 +1109,7 @@ int LDH_A_a8(proc* p)
   uint16_t addr = 0xFF00 + p->mem[p->pc+1];
   p->af.r8.high = p->mem[addr];
 
-  p->pc += 2; 
+  p->pc += 2;
   return 12;
 }
 
@@ -1132,7 +1132,7 @@ int CP_d8(proc* p)
 
 int CP_reg(proc* p, uint8_t r)
 {
-  CP(p, r); 
+  CP(p, r);
   p->pc += 1;
   return 4;
 }
@@ -1172,6 +1172,14 @@ int DAA(proc* p)
 
   set_flag(p, ZERO, *acc == 0);
   clear_flags(p, HALF_CARRY);
+
+  p->pc++;
+  return 4;
+}
+
+int CPL(proc* p)
+{
+  ~p->af.r8.high;
 
   p->pc++;
   return 4;
@@ -1436,7 +1444,7 @@ op prefix_operations[NUM_OPS] = {
   set_bit_7_A,      // 0xff
 };
 
-op operations[NUM_OPS] = { 
+op operations[NUM_OPS] = {
   NOP,              // 0x00
   LD_BC,            // 0x01
   LD_mBC_A,         // 0x02
@@ -1480,7 +1488,7 @@ op operations[NUM_OPS] = {
   JR_Z,             // 0x28
   ADD_HL_HL,        // 0x29
   LD_A_mHL_inc,     // 0x2a
-  not_implemented,  // 0x2b
+  DEC_HL,           // 0x2b
   INC_L,            // 0x2c
   DEC_L,            // 0x2d
   LD_L,             // 0x2e
@@ -1524,7 +1532,7 @@ op operations[NUM_OPS] = {
   LD_D_H,           // 0x54
   LD_D_L,           // 0x55
   LD_D_mHL,         // 0x56
-  LD_D_A,           // 0x57 
+  LD_D_A,           // 0x57
   LD_E_B,           // 0x58
   LD_E_C,           // 0x59
   LD_E_D,           // 0x5a
@@ -1532,7 +1540,7 @@ op operations[NUM_OPS] = {
   LD_E_H,           // 0x5c
   LD_E_L,           // 0x5d
   LD_E_mHL,         // 0x5e
-  LD_E_A,           // 0x5f 
+  LD_E_A,           // 0x5f
   LD_H_B,           // 0x60
   LD_H_C,           // 0x61
   LD_H_D,           // 0x62
@@ -1540,7 +1548,7 @@ op operations[NUM_OPS] = {
   LD_H_H,           // 0x64
   LD_H_L,           // 0x65
   LD_H_mHL,         // 0x66
-  LD_H_A,           // 0x67 
+  LD_H_A,           // 0x67
   LD_L_B,           // 0x68
   LD_L_C,           // 0x69
   LD_L_D,           // 0x6a
@@ -1548,7 +1556,7 @@ op operations[NUM_OPS] = {
   LD_L_H,           // 0x6c
   LD_L_L,           // 0x6d
   LD_L_mHL,         // 0x6e
-  LD_L_A,           // 0x6f 
+  LD_L_A,           // 0x6f
   LD_mHL_B,         // 0x70
   LD_mHL_C,         // 0x71
   LD_mHL_D,         // 0x72
@@ -1697,6 +1705,6 @@ op operations[NUM_OPS] = {
 
 int run_operation(proc* p, uint8_t op)
 {
-  return operations[op](p); 
+  return operations[op](p);
 }
 
