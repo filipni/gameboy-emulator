@@ -1181,6 +1181,9 @@ int CPL(proc* p)
 {
   ~p->af.r8.high;
 
+  set_flag(p, SUBTRACT, 1);
+  set_flag(p, HALF_CARRY, 1);
+
   p->pc++;
   return 4;
 }
@@ -1492,7 +1495,7 @@ op operations[NUM_OPS] = {
   INC_L,            // 0x2c
   DEC_L,            // 0x2d
   LD_L,             // 0x2e
-  not_implemented,  // 0x2f
+  CPL,              // 0x2f
   JR_NC,            // 0x30
   LD_SP,            // 0x31
   LD_mHL_A_dec,     // 0x32
