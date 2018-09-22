@@ -1188,6 +1188,17 @@ int CPL(proc* p)
   return 4;
 }
 
+int CCF(proc* p)
+{
+  // Complement carry flag
+  set_flag(p, CARRY, !test_flag(p, CARRY));
+  clear_flags(p, SUBTRACT | HALF_CARRY);
+
+  p->pc++;
+  return 4;
+}
+
+
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
   RLC_C,            // 0x01
@@ -1511,7 +1522,7 @@ op operations[NUM_OPS] = {
   INC_A,            // 0x3c
   DEC_A,            // 0x3d
   LD_A,             // 0x3e
-  not_implemented,  // 0x3f
+  CCF,              // 0x3f
   LD_B_B,           // 0x40
   LD_B_C,           // 0x41
   LD_B_D,           // 0x42
