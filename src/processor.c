@@ -971,6 +971,25 @@ int RST_18(proc* p) { return RST(p, 0x18); }
 int RST_28(proc* p) { return RST(p, 0x28); }
 int RST_38(proc* p) { return RST(p, 0x38); }
 
+int ADD_16bit(proc* p, uint16_t* r1, uint16_t r2)
+{
+  clear_flags(p, ZERO);
+  int half_sum = (*r1 & 0xFF) + (r2 & 0xFF);
+  set_flag(p, HALF_CARRY, half_sum >= 0x100);
+  int sum = *r1 + r2;
+  set_flag(p, CARRY, sum >= 0x10000);
+
+  *r1 = (uint16_t) sum;
+
+  p->pc++;
+  return 8;
+}
+
+int ADD_HL_BC(proc* p) { return ADD_16bit(p, &p->hl.r16, p->bc.r16); }
+int ADD_HL_DE(proc* p) { return ADD_16bit(p, &p->hl.r16, p->de.r16); }
+int ADD_HL_HL(proc* p) { return ADD_16bit(p, &p->hl.r16, p->hl.r16); }
+int ADD_HL_SP(proc* p) { return ADD_16bit(p, &p->hl.r16, p->sp); }
+
 int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
 
@@ -1396,7 +1415,7 @@ op operations[NUM_OPS] = {
   LD_B,             // 0x06
   RLCA,             // 0x07
   LD_a16_SP,        // 0x08
-  not_implemented,  // 0x09
+  ADD_HL_BC,        // 0x09
   LD_A_mBC,         // 0x0a
   DEC_BC,           // 0x0b
   INC_C,            // 0x0c
@@ -1412,7 +1431,7 @@ op operations[NUM_OPS] = {
   LD_D,             // 0x16
   RLA,              // 0x17
   JR,               // 0x18
-  not_implemented,  // 0x19
+  ADD_HL_DE,        // 0x19
   LD_A_mDE,         // 0x1a
   DEC_DE,           // 0x1b
   INC_E,            // 0x1c
@@ -1428,7 +1447,7 @@ op operations[NUM_OPS] = {
   LD_H,             // 0x26
   not_implemented,  // 0x27
   JR_Z,             // 0x28
-  not_implemented,  // 0x29
+  ADD_HL_HL,        // 0x29
   LD_A_mHL_inc,     // 0x2a
   not_implemented,  // 0x2b
   INC_L,            // 0x2c
@@ -1444,7 +1463,7 @@ op operations[NUM_OPS] = {
   LD_mHL,           // 0x36
   not_implemented,  // 0x37
   JR_C,             // 0x38
-  not_implemented,  // 0x39
+  ADD_HL_SP,        // 0x39
   LD_A_mHL_dec,     // 0x3a
   DEC_SP,           // 0x3b
   INC_A,            // 0x3c
