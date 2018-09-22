@@ -4,14 +4,40 @@
 
 int not_implemented(proc* p) { return -1; }
 
-int RET(proc* p)
+int RET_INT(proc* p, uint8_t enable_interrupts)
 {
   uint16_t addr = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
+
+  if (enable_interrupts)
+    p->interrupts_enabled = 1;
 
   p->sp += 2;
   p->pc = addr;
   return 16;
 }
+
+int RET(proc* p) { return RET_INT(p, 0); }
+int RETI(proc* p) { return RET_INT(p, 1); }
+
+int COND_RET(proc* p, uint8_t cond)
+{
+  if (cond)
+  {
+    uint16_t addr = generate_address(p->mem[p->sp], p->mem[p->sp+1]);
+
+    p->sp += 2;
+    p->pc = addr;
+    return 20;
+  }
+
+  p->pc++;
+  return 8;
+}
+
+int RET_Z(proc* p) { return COND_RET(p, test_flag(p, ZERO)); }
+int RET_NZ(proc* p) { return COND_RET(p, !test_flag(p, ZERO)); }
+int RET_C(proc* p) { return COND_RET(p, test_flag(p, CARRY)); }
+int RET_NC(proc* p) { return COND_RET(p, !test_flag(p, CARRY)); }
 
 int RLC(proc* p, uint8_t* r)
 {
@@ -1198,7 +1224,6 @@ int CCF(proc* p)
   return 4;
 }
 
-
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
   RLC_C,            // 0x01
@@ -1651,7 +1676,7 @@ op operations[NUM_OPS] = {
   CP_L,             // 0xbd
   CP_HL,            // 0xbe
   CP_A,             // 0xbf
-  not_implemented,  // 0xc0
+  RET_NZ,           // 0xc0
   POP_BC,           // 0xc1
   JP_NZ,            // 0xc2
   JP,               // 0xc3
@@ -1659,15 +1684,15 @@ op operations[NUM_OPS] = {
   PUSH_BC,          // 0xc5
   not_implemented,  // 0xc6
   RST_00,           // 0xc7
-  not_implemented,  // 0xc8
-  not_implemented,  // 0xc9
+  RET_Z,            // 0xc8
+  RET,              // 0xc9
   JP_Z,             // 0xca
   not_implemented,  // 0xcb
   not_implemented,  // 0xcc
   not_implemented,  // 0xcd
   not_implemented,  // 0xce
   RST_08,           // 0xcf
-  not_implemented,  // 0xd0
+  RET_NC,           // 0xd0
   POP_DE,           // 0xd1
   JP_NC,            // 0xd2
   not_implemented,  // 0xd3
@@ -1675,8 +1700,8 @@ op operations[NUM_OPS] = {
   PUSH_DE,          // 0xd5
   not_implemented,  // 0xd6
   RST_10,           // 0xd7
-  not_implemented,  // 0xd8
-  not_implemented,  // 0xd9
+  RET_C,            // 0xd8
+  RETI,             // 0xd9
   JP_C,             // 0xda
   not_implemented,  // 0xdb
   not_implemented,  // 0xdc
