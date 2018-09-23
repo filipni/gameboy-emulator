@@ -16,6 +16,20 @@ int RET_INT(proc* p, uint8_t enable_interrupts)
   return 16;
 }
 
+int CALL(proc* p)
+{
+  uint16_t next_addr = p->pc + 1;
+  // Push address to stack in little-endian order
+  p->mem[p->sp-1] = next_addr & 0xF0; // High byte
+  p->mem[p->sp-2] = next_addr & 0x0F; // Low byte
+  p->sp -= 2;
+
+  uint16_t addr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+
+  p->pc = addr;
+  return 24;
+}
+
 int RET(proc* p) { return RET_INT(p, 0); }
 int RETI(proc* p) { return RET_INT(p, 1); }
 
@@ -965,8 +979,8 @@ int POP_AF(proc*p)  { return POP(p, &p->af.r16); }
 
 int PUSH(proc* p, reg* r)
 {
-  p->mem[p->sp+1] = r->r8.high;
-  p->mem[p->sp+2] = r->r8.low;
+  p->mem[p->sp-1] = r->r8.high;
+  p->mem[p->sp-2] = r->r8.low;
 
   p->sp -= 2;
   p->pc += 1;
@@ -1689,7 +1703,7 @@ op operations[NUM_OPS] = {
   JP_Z,             // 0xca
   not_implemented,  // 0xcb
   not_implemented,  // 0xcc
-  not_implemented,  // 0xcd
+  CALL,             // 0xcd
   not_implemented,  // 0xce
   RST_08,           // 0xcf
   RET_NC,           // 0xd0
