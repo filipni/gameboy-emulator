@@ -1734,7 +1734,7 @@ op operations[NUM_OPS] = {
   RET_NC,           // 0xd0
   POP_DE,           // 0xd1
   JP_NC,            // 0xd2
-  not_implemented,  // 0xd3
+  not_implemented,  // 0xd3 (does not exist)
   CALL_NC,          // 0xd4
   PUSH_DE,          // 0xd5
   not_implemented,  // 0xd6
@@ -1742,32 +1742,32 @@ op operations[NUM_OPS] = {
   RET_C,            // 0xd8
   RETI,             // 0xd9
   JP_C,             // 0xda
-  not_implemented,  // 0xdb
+  not_implemented,  // 0xdb (does not exist)
   CALL_C,           // 0xdc
-  not_implemented,  // 0xdd
+  not_implemented,  // 0xdd (does not exist)
   not_implemented,  // 0xde
   RST_18,           // 0xdf
   LDH_a8_A,         // 0xe0
   POP_HL,           // 0xe1
   not_implemented,  // 0xe2
-  not_implemented,  // 0xe3
-  not_implemented,  // 0xe4
+  not_implemented,  // 0xe3 (does not exist)
+  not_implemented,  // 0xe4 (does not exist)
   PUSH_HL,          // 0xe5
   not_implemented,  // 0xe6
   RST_20,           // 0xe7
   not_implemented,  // 0xe8
   not_implemented,  // 0xe9
   not_implemented,  // 0xea
-  not_implemented,  // 0xeb
-  not_implemented,  // 0xec
-  not_implemented,  // 0xed
+  not_implemented,  // 0xeb (does not exist)
+  not_implemented,  // 0xec (does not exist)
+  not_implemented,  // 0xed (does not exist)
   not_implemented,  // 0xee
   RST_28,           // 0xef
   LDH_A_a8,         // 0xf0
   POP_AF,           // 0xf1
   not_implemented,  // 0xf2
   DI,               // 0xf3
-  not_implemented,  // 0xf4
+  not_implemented,  // 0xf4 (does not exist)
   PUSH_AF,          // 0xf5
   not_implemented,  // 0xf6
   RST_30,           // 0xf7
@@ -1775,8 +1775,8 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xf9
   not_implemented,  // 0xfa
   EI,               // 0xfb
-  not_implemented,  // 0xfc
-  not_implemented,  // 0xfd
+  not_implemented,  // 0xfc (does not exist)
+  not_implemented,  // 0xfd (does not exist)
   CP_d8,            // 0xfe
   RST_38,           // 0xff
 };
