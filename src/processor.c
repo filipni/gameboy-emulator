@@ -1011,6 +1011,13 @@ int XOR_H(proc* p) { return XOR(p, p->hl.r8.high); }
 int XOR_L(proc* p) { return XOR(p, p->hl.r8.low); }
 int XOR_HL(proc* p) { return XOR(p, p->mem[p->hl.r16]); }
 int XOR_A(proc* p) { return XOR(p, p->af.r8.high); }
+int XOR_A_d8(proc* p)
+{
+  XOR(p, p->mem[p->pc+1]);
+
+  p->pc++; // Already incremented once in call to XOR
+  return 8;
+}
 
 int POP(proc* p, uint16_t* r)
 {
@@ -1105,6 +1112,13 @@ int ADD_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, 0); }
 int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); }
 int ADD_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
 int ADD_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, 0); }
+int ADD_A_d8(proc* p)
+{
+  ADD(p, &p->af.r8.high, p->mem[p->pc+1], 0);
+
+  p->pc++; // Already incremented once in call to ADD
+  return 8;
+}
 
 int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
 int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
@@ -1114,6 +1128,13 @@ int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, test_flag(p,
 int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
 int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, p->mem[p->hl.r16], test_flag(p, CARRY)); }
 int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
+int ADC_A_d8(proc* p)
+{
+  ADD(p, &p->af.r8.high, p->mem[p->pc+1], test_flag(p, CARRY));
+
+  p->pc++; // Already incremented once in call to ADD
+  return 8;
+}
 
 int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
@@ -1136,6 +1157,13 @@ int SUB_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, 0); }
 int SUB_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, 0); }
 int SUB_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], 0); }
 int SUB_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, 0); }
+int SUB_A_d8(proc* p)
+{
+  SUB(p, &p->af.r8.high, p->mem[p->pc+1], 0);
+
+  p->pc++; // Already incremented once in call to SUB
+  return 8;
+}
 
 int SBC_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
 int SBC_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
@@ -1145,10 +1173,17 @@ int SBC_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, C
 int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
 int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, p->mem[p->hl.r16], test_flag(p, CARRY)); }
 int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
-
-int AND(proc* p, uint8_t* r)
+int SBC_A_d8(proc* p)
 {
-  p->af.r8.high &= *r;
+  SUB(p, &p->af.r8.high, p->mem[p->pc+1], test_flag(p, CARRY));
+
+  p->pc++; // Already incremented once in call to SUB
+  return 8;
+}
+
+int AND(proc* p, uint8_t r)
+{
+  p->af.r8.high &= r;
   set_flag(p, ZERO, !p->af.r8.high);
   set_flag(p, HALF_CARRY, 1);
   clear_flags(p, SUBTRACT | CARRY);
@@ -1157,18 +1192,25 @@ int AND(proc* p, uint8_t* r)
   return 4;
 }
 
-int AND_B(proc* p) { return AND(p, &p->bc.r8.high); }
-int AND_C(proc* p) { return AND(p, &p->bc.r8.low); }
-int AND_D(proc* p) { return AND(p, &p->de.r8.high); }
-int AND_E(proc* p) { return AND(p, &p->de.r8.low); }
-int AND_H(proc* p) { return AND(p, &p->hl.r8.high); }
-int AND_L(proc* p) { return AND(p, &p->hl.r8.low); }
-int AND_mHL(proc* p) { return AND(p, &p->mem[p->hl.r16]); }
-int AND_A(proc* p) { return AND(p, &p->af.r8.high); }
-
-int OR(proc* p, uint8_t* r)
+int AND_B(proc* p) { return AND(p, p->bc.r8.high); }
+int AND_C(proc* p) { return AND(p, p->bc.r8.low); }
+int AND_D(proc* p) { return AND(p, p->de.r8.high); }
+int AND_E(proc* p) { return AND(p, p->de.r8.low); }
+int AND_H(proc* p) { return AND(p, p->hl.r8.high); }
+int AND_L(proc* p) { return AND(p, p->hl.r8.low); }
+int AND_mHL(proc* p) { return AND(p, p->mem[p->hl.r16]); }
+int AND_A(proc* p) { return AND(p, p->af.r8.high); }
+int AND_A_d8(proc* p)
 {
-  p->af.r8.high |= *r;
+  AND(p, p->mem[p->pc+1]);
+
+  p->pc++; // Already incremented once in call to AND
+  return 8;
+}
+
+int OR(proc* p, uint8_t r)
+{
+  p->af.r8.high |= r;
   set_flag(p, ZERO, !p->af.r8.high);
   clear_flags(p, SUBTRACT | HALF_CARRY | CARRY);
 
@@ -1176,14 +1218,21 @@ int OR(proc* p, uint8_t* r)
   return 4;
 }
 
-int OR_B(proc* p) { return OR(p, &p->bc.r8.high); }
-int OR_C(proc* p) { return OR(p, &p->bc.r8.low); }
-int OR_D(proc* p) { return OR(p, &p->de.r8.high); }
-int OR_E(proc* p) { return OR(p, &p->de.r8.low); }
-int OR_H(proc* p) { return OR(p, &p->hl.r8.high); }
-int OR_L(proc* p) { return OR(p, &p->hl.r8.low); }
-int OR_mHL(proc* p) { return OR(p, &p->mem[p->hl.r16]); }
-int OR_A(proc* p) { return OR(p, &p->af.r8.high); }
+int OR_B(proc* p) { return OR(p, p->bc.r8.high); }
+int OR_C(proc* p) { return OR(p, p->bc.r8.low); }
+int OR_D(proc* p) { return OR(p, p->de.r8.high); }
+int OR_E(proc* p) { return OR(p, p->de.r8.low); }
+int OR_H(proc* p) { return OR(p, p->hl.r8.high); }
+int OR_L(proc* p) { return OR(p, p->hl.r8.low); }
+int OR_mHL(proc* p) { return OR(p, p->mem[p->hl.r16]); }
+int OR_A(proc* p) { return OR(p, p->af.r8.high); }
+int OR_A_d8(proc* p)
+{
+  OR(p, p->mem[p->pc+1]);
+
+  p->pc++; // Already incremented once in call to OR
+  return 8;
+}
 
 int LDH_a8_A(proc* p)
 {
@@ -1754,7 +1803,7 @@ op operations[NUM_OPS] = {
   JP,               // 0xc3
   CALL_NZ,          // 0xc4
   PUSH_BC,          // 0xc5
-  not_implemented,  // 0xc6
+  ADD_A_d8,         // 0xc6
   RST_00,           // 0xc7
   RET_Z,            // 0xc8
   RET,              // 0xc9
@@ -1762,7 +1811,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xcb
   CALL_Z,           // 0xcc
   CALL,             // 0xcd
-  not_implemented,  // 0xce
+  ADC_A_d8,         // 0xce
   RST_08,           // 0xcf
   RET_NC,           // 0xd0
   POP_DE,           // 0xd1
@@ -1770,7 +1819,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xd3 (does not exist)
   CALL_NC,          // 0xd4
   PUSH_DE,          // 0xd5
-  not_implemented,  // 0xd6
+  SUB_A_d8,         // 0xd6
   RST_10,           // 0xd7
   RET_C,            // 0xd8
   RETI,             // 0xd9
@@ -1778,7 +1827,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xdb (does not exist)
   CALL_C,           // 0xdc
   not_implemented,  // 0xdd (does not exist)
-  not_implemented,  // 0xde
+  SBC_A_d8,         // 0xde
   RST_18,           // 0xdf
   LDH_a8_A,         // 0xe0
   POP_HL,           // 0xe1
@@ -1786,7 +1835,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xe3 (does not exist)
   not_implemented,  // 0xe4 (does not exist)
   PUSH_HL,          // 0xe5
-  not_implemented,  // 0xe6
+  AND_A_d8,         // 0xe6
   RST_20,           // 0xe7
   not_implemented,  // 0xe8
   JP_HL,            // 0xe9
@@ -1794,7 +1843,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xeb (does not exist)
   not_implemented,  // 0xec (does not exist)
   not_implemented,  // 0xed (does not exist)
-  not_implemented,  // 0xee
+  XOR_A_d8,         // 0xee
   RST_28,           // 0xef
   LDH_A_a8,         // 0xf0
   POP_AF,           // 0xf1
@@ -1802,7 +1851,7 @@ op operations[NUM_OPS] = {
   DI,               // 0xf3
   not_implemented,  // 0xf4 (does not exist)
   PUSH_AF,          // 0xf5
-  not_implemented,  // 0xf6
+  OR_A_d8,          // 0xf6
   RST_30,           // 0xf7
   not_implemented,  // 0xf8
   LD_SP_HL,         // 0xf9
