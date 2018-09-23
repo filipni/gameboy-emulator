@@ -941,6 +941,13 @@ int JP_Z(proc* p) { return COND_JP(p, test_flag(p, ZERO)); }
 int JP_NC(proc* p) { return COND_JP(p, !test_flag(p, CARRY)); }
 int JP_C(proc* p) { return COND_JP(p, test_flag(p, CARRY)); }
 
+int JP_HL(proc* p)
+{
+  uint16_t adr = generate_address(p->hl.r8.low, p->hl.r8.high);
+  p->pc = p->mem[adr];
+  return 4;
+}
+
 int JR(proc* p)
 {
   uint16_t adr = p->pc + 1 + p->mem[p->pc+1];
@@ -1756,7 +1763,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xe6
   RST_20,           // 0xe7
   not_implemented,  // 0xe8
-  not_implemented,  // 0xe9
+  JP_HL,            // 0xe9
   not_implemented,  // 0xea
   not_implemented,  // 0xeb (does not exist)
   not_implemented,  // 0xec (does not exist)
