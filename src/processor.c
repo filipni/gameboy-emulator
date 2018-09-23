@@ -30,6 +30,31 @@ int CALL(proc* p)
   return 24;
 }
 
+int COND_CALL(proc* p, uint8_t cond)
+{
+  if (cond)
+  {
+    uint16_t next_addr = p->pc + 1;
+    // Push address to stack in little-endian order
+    p->mem[p->sp-1] = next_addr & 0xF0; // High byte
+    p->mem[p->sp-2] = next_addr & 0x0F; // Low byte
+    p->sp -= 2;
+
+    uint16_t addr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+
+    p->pc = addr;
+    return 24;
+  }
+
+  p->pc += 3;
+  return 12;
+}
+
+int CALL_Z(proc* p) { return COND_CALL(p, test_flag(p, ZERO)); };
+int CALL_NZ(proc* p) { return COND_CALL(p, !test_flag(p, ZERO)); };
+int CALL_C(proc* p) { return COND_CALL(p, test_flag(p, CARRY)); };
+int CALL_NC(proc* p) { return COND_CALL(p, !test_flag(p, CARRY)); };
+
 int RET(proc* p) { return RET_INT(p, 0); }
 int RETI(proc* p) { return RET_INT(p, 1); }
 
@@ -1694,7 +1719,7 @@ op operations[NUM_OPS] = {
   POP_BC,           // 0xc1
   JP_NZ,            // 0xc2
   JP,               // 0xc3
-  not_implemented,  // 0xc4
+  CALL_NZ,          // 0xc4
   PUSH_BC,          // 0xc5
   not_implemented,  // 0xc6
   RST_00,           // 0xc7
@@ -1702,7 +1727,7 @@ op operations[NUM_OPS] = {
   RET,              // 0xc9
   JP_Z,             // 0xca
   not_implemented,  // 0xcb
-  not_implemented,  // 0xcc
+  CALL_Z,           // 0xcc
   CALL,             // 0xcd
   not_implemented,  // 0xce
   RST_08,           // 0xcf
@@ -1710,7 +1735,7 @@ op operations[NUM_OPS] = {
   POP_DE,           // 0xd1
   JP_NC,            // 0xd2
   not_implemented,  // 0xd3
-  not_implemented,  // 0xd4
+  CALL_NC,          // 0xd4
   PUSH_DE,          // 0xd5
   not_implemented,  // 0xd6
   RST_10,           // 0xd7
@@ -1718,7 +1743,7 @@ op operations[NUM_OPS] = {
   RETI,             // 0xd9
   JP_C,             // 0xda
   not_implemented,  // 0xdb
-  not_implemented,  // 0xdc
+  CALL_C,           // 0xdc
   not_implemented,  // 0xdd
   not_implemented,  // 0xde
   RST_18,           // 0xdf
