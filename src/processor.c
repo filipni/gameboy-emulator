@@ -1185,6 +1185,14 @@ int LDH_A_a8(proc* p)
   return 12;
 }
 
+int LD_SP_HL(proc* p)
+{
+  p->sp = p->hl.r16;
+
+  p->pc += 1;
+  return 8;
+}
+
 int CP(proc* p, uint8_t r)
 {
   uint8_t a = p->af.r8.high;
@@ -1779,7 +1787,7 @@ op operations[NUM_OPS] = {
   not_implemented,  // 0xf6
   RST_30,           // 0xf7
   not_implemented,  // 0xf8
-  not_implemented,  // 0xf9
+  LD_SP_HL,         // 0xf9
   not_implemented,  // 0xfa
   EI,               // 0xfb
   not_implemented,  // 0xfc (does not exist)
