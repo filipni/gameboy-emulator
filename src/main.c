@@ -95,7 +95,7 @@ int main(int argc, char* argv[])
     }
     */
 
-    int res = run_operation(&p, memory[p.pc]);
+    int res = run_operation(&p);
 
     if (res < 0)
     {

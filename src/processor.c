@@ -1398,6 +1398,21 @@ int CCF(proc* p)
   return 4;
 }
 
+int SCF(proc* p)
+{
+  set_flag(p, CARRY, 1);
+  clear_flags(p, SUBTRACT | HALF_CARRY);
+
+  p->pc++;
+  return 4;
+}
+
+int PREFIX(proc* p)
+{
+  p->pc++;
+  return prefix_operations[p->mem[p->pc]](p) + 4;
+}
+
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
   RLC_C,            // 0x01
@@ -1713,7 +1728,7 @@ op operations[NUM_OPS] = {
   INC_mHL,          // 0x34
   DEC_mHL,          // 0x35
   LD_mHL,           // 0x36
-  not_implemented,  // 0x37
+  SCF,              // 0x37
   JR_C,             // 0x38
   ADD_HL_SP,        // 0x39
   LD_A_mHL_dec,     // 0x3a
@@ -1861,7 +1876,7 @@ op operations[NUM_OPS] = {
   RET_Z,            // 0xc8
   RET,              // 0xc9
   JP_Z,             // 0xca
-  not_implemented,  // 0xcb
+  PREFIX,           // 0xcb
   CALL_Z,           // 0xcc
   CALL,             // 0xcd
   ADC_A_d8,         // 0xce
@@ -1918,6 +1933,6 @@ op operations[NUM_OPS] = {
 
 int run_operation(proc* p, uint8_t op)
 {
-  return operations[op](p);
+  return operations[p->mem[p->pc]](p);
 }
 
