@@ -672,6 +672,24 @@ int LD_A_mHL_dec(proc* p)
   return 8;
 }
 
+int LD_A_a16(proc* p)
+{
+  uint16_t addr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+  p->af.r8.high = p->mem[addr];
+
+  p->pc += 3;
+  return 16;
+}
+
+int LD_a16_A(proc* p)
+{
+  uint16_t addr = generate_address(p->mem[p->pc+1], p->mem[p->pc+2]);
+  p->mem[addr] = p->af.r8.high;
+
+  p->pc += 3;
+  return 16;
+}
+
 int INC_r16(proc* p, uint16_t* r)
 {
   *r++;
@@ -1772,7 +1790,7 @@ op operations[NUM_OPS] = {
   RST_20,           // 0xe7
   not_implemented,  // 0xe8
   JP_HL,            // 0xe9
-  not_implemented,  // 0xea
+  LD_a16_A,         // 0xea
   not_implemented,  // 0xeb (does not exist)
   not_implemented,  // 0xec (does not exist)
   not_implemented,  // 0xed (does not exist)
@@ -1788,7 +1806,7 @@ op operations[NUM_OPS] = {
   RST_30,           // 0xf7
   not_implemented,  // 0xf8
   LD_SP_HL,         // 0xf9
-  not_implemented,  // 0xfa
+  LD_A_a16,         // 0xfa
   EI,               // 0xfb
   not_implemented,  // 0xfc (does not exist)
   not_implemented,  // 0xfd (does not exist)
