@@ -775,6 +775,33 @@ int LD_SP(proc* p)
   return 12;
 }
 
+int LDHL_SP_r8(proc* p)
+{
+  uint8_t d8 = p->mem[p->pc+1];
+  uint16_t res = p->sp + d8;
+
+  uint8_t is_negative = (d8 & 0x80);
+  if (is_negative)
+  {
+    set_flag(p, HALF_CARRY, (res & 0x0F) <= (p->sp & 0x0F));
+    set_flag(p, CARRY, (res & 0xFF) <= (p->sp & 0xFF));
+  }
+  else
+  {
+    int half_sum = (p->sp & 0x0F) + (d8 & 0x0F);
+    set_flag(p, HALF_CARRY, half_sum >= 0x100);
+    int sum = (p->sp & 0xFF) + d8;
+    set_flag(p, CARRY, sum >= 0x10000);
+  }
+
+  clear_flags(p, ZERO | SUBTRACT);
+
+  p->hl.r16 = res;
+
+  p->pc += 2;
+  return 12;
+}
+
 int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem)
 {
   *reg = *mem;
@@ -1094,7 +1121,7 @@ int ADD_16bit(proc* p, uint16_t* r1, uint16_t r2)
   int sum = *r1 + r2;
   set_flag(p, CARRY, sum >= 0x10000);
 
-  *r1 = (uint16_t) sum;
+  *r1 = *r1 + r2;
 
   p->pc++;
   return 8;
@@ -1104,6 +1131,14 @@ int ADD_HL_BC(proc* p) { return ADD_16bit(p, &p->hl.r16, p->bc.r16); }
 int ADD_HL_DE(proc* p) { return ADD_16bit(p, &p->hl.r16, p->de.r16); }
 int ADD_HL_HL(proc* p) { return ADD_16bit(p, &p->hl.r16, p->hl.r16); }
 int ADD_HL_SP(proc* p) { return ADD_16bit(p, &p->hl.r16, p->sp); }
+int ADD_SP_r8(proc* p)
+{
+  ADD_16bit(p, &p->sp, p->mem[p->pc+1]);
+  clear_flags(p, ZERO);
+
+  p->pc++; // Already incremented once by call to ADD_16bit
+  return 16;
+}
 
 int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
 {
@@ -1855,7 +1890,7 @@ op operations[NUM_OPS] = {
   PUSH_HL,          // 0xe5
   AND_A_d8,         // 0xe6
   RST_20,           // 0xe7
-  not_implemented,  // 0xe8
+  ADD_SP_r8,        // 0xe8
   JP_HL,            // 0xe9
   LD_a16_A,         // 0xea
   not_implemented,  // 0xeb (does not exist)
@@ -1871,7 +1906,7 @@ op operations[NUM_OPS] = {
   PUSH_AF,          // 0xf5
   OR_A_d8,          // 0xf6
   RST_30,           // 0xf7
-  not_implemented,  // 0xf8
+  LDHL_SP_r8,       // 0xf8
   LD_SP_HL,         // 0xf9
   LD_A_a16,         // 0xfa
   EI,               // 0xfb
