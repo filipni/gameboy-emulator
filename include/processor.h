@@ -33,14 +33,16 @@ typedef struct {
   uint16_t pc;
 
   uint8_t interrupts_enabled;
-
-  char *mem;
 } proc;
 
-typedef int (*op) (proc*);
+proc p;
 
-int run_operation(proc*);
-int PREFIX(proc*);
+typedef int (*op) ();
+
+void init_proc();
+void print_debug_info();
+int run_operation();
+int PREFIX();
 
 #endif
 

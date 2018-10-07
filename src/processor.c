@@ -2,554 +2,587 @@
 #include "utils.h"
 #include "memory.h"
 #include <string.h>
+#include <stdio.h>
 
-int not_implemented(proc* p) { return -1; }
-
-int RET_INT(proc* p, uint8_t enable_interrupts)
+void init_proc()
 {
-  uint16_t addr = generate_address(read_from_mem(p->sp), read_from_mem(p->sp+1));
+  p.af.r16 = 0x01B0;
+  p.bc.r16 = 0x0013;
+  p.de.r16 = 0x00D8;
+  p.hl.r16 = 0x014D;
+  p.sp = 0xFFFE;
+  p.pc = 0x0100;
+
+}
+
+void print_debug_info()
+{
+  printf("FLAGS\n");
+  printf("-----\n");
+  printf("Zero:    %x\n", test_flag(&p, ZERO));
+  printf("Sub:     %x\n", test_flag(&p, SUBTRACT));
+  printf("H-carry: %x\n", test_flag(&p, HALF_CARRY));
+  printf("Carry:   %x\n\n", test_flag(&p, CARRY));
+
+  printf("REGISTERS\n");
+  printf("---------\n");
+  printf("AF: %04x\n", p.af.r16);
+  printf("BC: %04x\n", p.bc.r16);
+  printf("DE: %04x\n", p.de.r16);
+  printf("HL: %04x\n", p.hl.r16);
+  printf("SP: %04x\n", p.sp);
+  printf("PC: %04x\n\n", p.pc);
+
+  printf("===========\n");
+}
+
+int not_implemented() { return -1; }
+
+int RET_INT(uint8_t enable_interrupts)
+{
+  uint16_t addr = generate_address(read_from_mem(p.sp), read_from_mem(p.sp+1));
 
   if (enable_interrupts)
-    p->interrupts_enabled = 1;
+    p.interrupts_enabled = 1;
 
-  p->sp += 2;
-  p->pc = addr;
+  p.sp += 2;
+  p.pc = addr;
   return 16;
 }
 
-int CALL(proc* p)
+int CALL()
 {
-  uint16_t next_addr = p->pc + 1;
+  uint16_t next_addr = p.pc + 1;
   // Push address to stack in little-endian order
-  write_to_mem(p->sp-1, next_addr & 0xF0); // High byte
-  write_to_mem(p->sp-2, next_addr & 0x0F); // Low byte
-  p->sp -= 2;
+  write_to_mem(p.sp-1, next_addr & 0xF0); // High byte
+  write_to_mem(p.sp-2, next_addr & 0x0F); // Low byte
+  p.sp -= 2;
 
-  uint16_t addr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
+  uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
 
-  p->pc = addr;
+  p.pc = addr;
   return 24;
 }
 
-int COND_CALL(proc* p, uint8_t cond)
+int COND_CALL(uint8_t cond)
 {
   if (cond)
   {
-    uint16_t next_addr = p->pc + 1;
+    uint16_t next_addr = p.pc + 1;
     // Push address to stack in little-endian order
-    write_to_mem(p->sp-1, next_addr & 0xF0); // High byte
-    write_to_mem(p->sp-2, next_addr & 0x0F); // Low byte
-    p->sp -= 2;
+    write_to_mem(p.sp-1, next_addr & 0xF0); // High byte
+    write_to_mem(p.sp-2, next_addr & 0x0F); // Low byte
+    p.sp -= 2;
 
-    uint16_t addr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
+    uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
 
-    p->pc = addr;
+    p.pc = addr;
     return 24;
   }
 
-  p->pc += 3;
+  p.pc += 3;
   return 12;
 }
 
-int CALL_Z(proc* p) { return COND_CALL(p, test_flag(p, ZERO)); };
-int CALL_NZ(proc* p) { return COND_CALL(p, !test_flag(p, ZERO)); };
-int CALL_C(proc* p) { return COND_CALL(p, test_flag(p, CARRY)); };
-int CALL_NC(proc* p) { return COND_CALL(p, !test_flag(p, CARRY)); };
+int CALL_Z() { return COND_CALL(test_flag(&p, ZERO)); };
+int CALL_NZ() { return COND_CALL(!test_flag(&p, ZERO)); };
+int CALL_C() { return COND_CALL(test_flag(&p, CARRY)); };
+int CALL_NC() { return COND_CALL(!test_flag(&p, CARRY)); };
 
-int RET(proc* p) { return RET_INT(p, 0); }
-int RETI(proc* p) { return RET_INT(p, 1); }
+int RET() { return RET_INT(0); }
+int RETI() { return RET_INT(1); }
 
-int COND_RET(proc* p, uint8_t cond)
+int COND_RET(uint8_t cond)
 {
   if (cond)
   {
-    uint16_t addr = generate_address(read_from_mem(p->sp), read_from_mem(p->sp+1));
+    uint16_t addr = generate_address(read_from_mem(p.sp), read_from_mem(p.sp+1));
 
-    p->sp += 2;
-    p->pc = addr;
+    p.sp += 2;
+    p.pc = addr;
     return 20;
   }
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int RET_Z(proc* p) { return COND_RET(p, test_flag(p, ZERO)); }
-int RET_NZ(proc* p) { return COND_RET(p, !test_flag(p, ZERO)); }
-int RET_C(proc* p) { return COND_RET(p, test_flag(p, CARRY)); }
-int RET_NC(proc* p) { return COND_RET(p, !test_flag(p, CARRY)); }
+int RET_Z() { return COND_RET(test_flag(&p, ZERO)); }
+int RET_NZ() { return COND_RET(!test_flag(&p, ZERO)); }
+int RET_C() { return COND_RET(test_flag(&p, CARRY)); }
+int RET_NC() { return COND_RET(!test_flag(&p, CARRY)); }
 
-int RLC(proc* p, uint8_t* r)
+int RLC(uint8_t* r)
 {
   uint8_t msb = *r & 0x80;
-  set_flag(p, CARRY, msb);
+  set_flag(&p, CARRY, msb);
   *r <<= 1;
 
   if (msb)
     *r |= 0x01; // Set bit 0
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int RLC_B(proc* p) { return RLC(p, &p->bc.r8.high); }
-int RLC_C(proc* p) { return RLC(p, &p->bc.r8.low); }
-int RLC_D(proc* p) { return RLC(p, &p->de.r8.high); }
-int RLC_E(proc* p) { return RLC(p, &p->de.r8.low); }
-int RLC_H(proc* p) { return RLC(p, &p->hl.r8.high); }
-int RLC_L(proc* p) { return RLC(p, &p->hl.r8.low); }
-int RLC_HL(proc* p) { return RLC(p, get_mem_ref(p->hl.r16)); }
-int RLC_A(proc* p) { return RLC(p, &p->af.r8.high); }
+int RLC_B() { return RLC(&p.bc.r8.high); }
+int RLC_C() { return RLC(&p.bc.r8.low); }
+int RLC_D() { return RLC(&p.de.r8.high); }
+int RLC_E() { return RLC(&p.de.r8.low); }
+int RLC_H() { return RLC(&p.hl.r8.high); }
+int RLC_L() { return RLC( &p.hl.r8.low); }
+int RLC_HL() { return RLC(get_mem_ref(p.hl.r16)); }
+int RLC_A() { return RLC(&p.af.r8.high); }
 
-int RRC(proc* p, uint8_t* r)
+int RRC(uint8_t* r)
 {
   uint8_t lsb = *r & 0x01;
-  set_flag(p, CARRY, lsb);
+  set_flag(&p, CARRY, lsb);
   *r >>= 1;
 
   if (lsb)
     *r |= 0x80; // Set bit 7
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int RRC_B(proc* p) { return RRC(p, &p->bc.r8.high); }
-int RRC_C(proc* p) { return RRC(p, &p->bc.r8.low); }
-int RRC_D(proc* p) { return RRC(p, &p->de.r8.high); }
-int RRC_E(proc* p) { return RRC(p, &p->de.r8.low); }
-int RRC_H(proc* p) { return RRC(p, &p->hl.r8.high); }
-int RRC_L(proc* p) { return RRC(p, &p->hl.r8.low); }
-int RRC_HL(proc* p) { return RRC(p, get_mem_ref(p->hl.r16)); }
-int RRC_A(proc* p) { return RRC(p, &p->af.r8.high); }
+int RRC_B() { return RRC(&p.bc.r8.high); }
+int RRC_C() { return RRC(&p.bc.r8.low); }
+int RRC_D() { return RRC(&p.de.r8.high); }
+int RRC_E() { return RRC(&p.de.r8.low); }
+int RRC_H() { return RRC(&p.hl.r8.high); }
+int RRC_L() { return RRC(&p.hl.r8.low); }
+int RRC_HL() { return RRC(get_mem_ref(p.hl.r16)); }
+int RRC_A() { return RRC(&p.af.r8.high); }
 
-int RL(proc* p, uint8_t* r)
+int RL(uint8_t* r)
 {
   uint8_t msb = *r & 0x80;
-  uint8_t old_carry = test_flag(p, CARRY);
-  set_flag(p, CARRY, msb);
+  uint8_t old_carry = test_flag(&p, CARRY);
+  set_flag(&p, CARRY, msb);
   *r <<= 1;
 
   if (old_carry)
     *r |= 0x01; // Set bit 0
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int RL_B(proc* p) { return RL(p, &p->bc.r8.high); }
-int RL_C(proc* p) { return RL(p, &p->bc.r8.low); }
-int RL_D(proc* p) { return RL(p, &p->de.r8.high); }
-int RL_E(proc* p) { return RL(p, &p->de.r8.low); }
-int RL_H(proc* p) { return RL(p, &p->hl.r8.high); }
-int RL_L(proc* p) { return RL(p, &p->hl.r8.low); }
-int RL_HL(proc* p) { return RL(p, get_mem_ref(p->hl.r16)); }
-int RL_A(proc* p) { return RL(p, &p->af.r8.high); }
+int RL_B() { return RL(&p.bc.r8.high); }
+int RL_C() { return RL(&p.bc.r8.low); }
+int RL_D() { return RL(&p.de.r8.high); }
+int RL_E() { return RL(&p.de.r8.low); }
+int RL_H() { return RL(&p.hl.r8.high); }
+int RL_L() { return RL(&p.hl.r8.low); }
+int RL_HL() { return RL(get_mem_ref(p.hl.r16)); }
+int RL_A() { return RL(&p.af.r8.high); }
 
-int RR(proc* p, uint8_t* r)
+int RR(uint8_t* r)
 {
   uint8_t lsb = *r & 0x01;
-  uint8_t old_carry = test_flag(p, CARRY);
-  set_flag(p, CARRY, lsb);
+  uint8_t old_carry = test_flag(&p, CARRY);
+  set_flag(&p, CARRY, lsb);
   *r >>= 1;
 
   if (old_carry)
     *r |= 0x80; // Set bit 7
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int RR_B(proc* p) { return RR(p, &p->bc.r8.high); }
-int RR_C(proc* p) { return RR(p, &p->bc.r8.low); }
-int RR_D(proc* p) { return RR(p, &p->de.r8.high); }
-int RR_E(proc* p) { return RR(p, &p->de.r8.low); }
-int RR_H(proc* p) { return RR(p, &p->hl.r8.high); }
-int RR_L(proc* p) { return RR(p, &p->hl.r8.low); }
-int RR_HL(proc* p) { return RR(p, get_mem_ref(p->hl.r16)); }
-int RR_A(proc* p) { return RR(p, &p->af.r8.high); }
+int RR_B() { return RR(&p.bc.r8.high); }
+int RR_C() { return RR(&p.bc.r8.low); }
+int RR_D() { return RR(&p.de.r8.high); }
+int RR_E() { return RR(&p.de.r8.low); }
+int RR_H() { return RR(&p.hl.r8.high); }
+int RR_L() { return RR(&p.hl.r8.low); }
+int RR_HL() { return RR(get_mem_ref(p.hl.r16)); }
+int RR_A() { return RR(&p.af.r8.high); }
 
-int RLCA(proc* p)
+int RLCA()
 {
-  int res = RLC(p, &p->af.r8.high);
-  set_flag(p, ZERO, 0);
+  int res = RLC(&p.af.r8.high);
+  set_flag(&p, ZERO, 0);
   return res;
 }
 
-int RLA(proc* p)
+int RLA()
 {
-  int res = RL(p, &p->af.r8.high);
-  set_flag(p, ZERO, 0);
+  int res = RL(&p.af.r8.high);
+  set_flag(&p, ZERO, 0);
   return res;
 }
 
-int RRCA(proc* p)
+int RRCA()
 {
-  int res = RRC(p, &p->af.r8.high);
-  set_flag(p, ZERO, 0);
+  int res = RRC(&p.af.r8.high);
+  set_flag(&p, ZERO, 0);
   return res;
 }
 
-int RRA(proc* p)
+int RRA()
 {
-  int res = RR(p, &p->af.r8.high);
-  set_flag(p, ZERO, 0);
+  int res = RR(&p.af.r8.high);
+  set_flag(&p, ZERO, 0);
   return res;
 }
 
-int SLA(proc* p, uint8_t* r)
+int SLA(uint8_t* r)
 {
   uint8_t msb = *r & 0x80;
-  set_flag(p, CARRY, msb);
+  set_flag(&p, CARRY, msb);
   *r <<= 1;
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int SLA_B(proc* p) { return SLA(p, &p->bc.r8.high); }
-int SLA_C(proc* p) { return SLA(p, &p->bc.r8.low); }
-int SLA_D(proc* p) { return SLA(p, &p->de.r8.high); }
-int SLA_E(proc* p) { return SLA(p, &p->de.r8.low); }
-int SLA_H(proc* p) { return SLA(p, &p->hl.r8.high); }
-int SLA_L(proc* p) { return SLA(p, &p->hl.r8.low); }
-int SLA_HL(proc* p) { return SLA(p, get_mem_ref(p->hl.r16)); }
-int SLA_A(proc* p) { return SLA(p, &p->af.r8.high); }
+int SLA_B() { return SLA(&p.bc.r8.high); }
+int SLA_C() { return SLA(&p.bc.r8.low); }
+int SLA_D() { return SLA(&p.de.r8.high); }
+int SLA_E() { return SLA(&p.de.r8.low); }
+int SLA_H() { return SLA(&p.hl.r8.high); }
+int SLA_L() { return SLA(&p.hl.r8.low); }
+int SLA_HL() { return SLA(get_mem_ref(p.hl.r16)); }
+int SLA_A() { return SLA(&p.af.r8.high); }
 
-int SRA(proc* p, uint8_t* r)
+int SRA(uint8_t* r)
 {
   uint8_t lsb = *r & 0x01;
   uint8_t msb = *r & 0x80;
-  set_flag(p, CARRY, lsb);
+  set_flag(&p, CARRY, lsb);
   *r >>= 1;
 
   if (msb)
     *r |= 0x80;
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int SRA_B(proc* p) { return SRA(p, &p->bc.r8.high); }
-int SRA_C(proc* p) { return SRA(p, &p->bc.r8.low); }
-int SRA_D(proc* p) { return SRA(p, &p->de.r8.high); }
-int SRA_E(proc* p) { return SRA(p, &p->de.r8.low); }
-int SRA_H(proc* p) { return SRA(p, &p->hl.r8.high); }
-int SRA_L(proc* p) { return SRA(p, &p->hl.r8.low); }
-int SRA_HL(proc* p) { return SRA(p, get_mem_ref(p->hl.r16)); }
-int SRA_A(proc* p) { return SRA(p, &p->af.r8.high); }
+int SRA_B() { return SRA(&p.bc.r8.high); }
+int SRA_C() { return SRA(&p.bc.r8.low); }
+int SRA_D() { return SRA(&p.de.r8.high); }
+int SRA_E() { return SRA(&p.de.r8.low); }
+int SRA_H() { return SRA(&p.hl.r8.high); }
+int SRA_L() { return SRA(&p.hl.r8.low); }
+int SRA_HL() { return SRA(get_mem_ref(p.hl.r16)); }
+int SRA_A() { return SRA(&p.af.r8.high); }
 
-int SRL(proc* p, uint8_t* r)
+int SRL(uint8_t* r)
 {
   uint8_t lsb = *r & 0x01;
-  set_flag(p, CARRY, lsb);
+  set_flag(&p, CARRY, lsb);
   *r >>= 1;
 
-  set_flag(p, ZERO, !(*r));
-  set_flag(p, SUBTRACT, 0);
-  set_flag(p, HALF_CARRY, 0);
+  set_flag(&p, ZERO, !(*r));
+  set_flag(&p, SUBTRACT, 0);
+  set_flag(&p, HALF_CARRY, 0);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int SRL_B(proc* p) { return SRL(p, &p->bc.r8.high); }
-int SRL_C(proc* p) { return SRL(p, &p->bc.r8.low); }
-int SRL_D(proc* p) { return SRL(p, &p->de.r8.high); }
-int SRL_E(proc* p) { return SRL(p, &p->de.r8.low); }
-int SRL_H(proc* p) { return SRL(p, &p->hl.r8.high); }
-int SRL_L(proc* p) { return SRL(p, &p->hl.r8.low); }
-int SRL_HL(proc* p) { return SRL(p, get_mem_ref(p->hl.r16)); }
-int SRL_A(proc* p) { return SRL(p, &p->af.r8.high); }
+int SRL_B() { return SRL(&p.bc.r8.high); }
+int SRL_C() { return SRL(&p.bc.r8.low); }
+int SRL_D() { return SRL(&p.de.r8.high); }
+int SRL_E() { return SRL(&p.de.r8.low); }
+int SRL_H() { return SRL(&p.hl.r8.high); }
+int SRL_L() { return SRL(&p.hl.r8.low); }
+int SRL_HL() { return SRL(get_mem_ref(p.hl.r16)); }
+int SRL_A() { return SRL(&p.af.r8.high); }
 
-int SWAP(proc* p, uint8_t* r)
+int SWAP(uint8_t* r)
 {
   uint8_t lower_nibble = *r & 0x0F;
   uint8_t upper_nibble = (*r & 0xF0) >> 4;
 
   *r = (lower_nibble << 4) + upper_nibble;
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int SWAP_B(proc* p) { return SWAP(p, &p->bc.r8.high); }
-int SWAP_C(proc* p) { return SWAP(p, &p->bc.r8.low); }
-int SWAP_D(proc* p) { return SWAP(p, &p->de.r8.high); }
-int SWAP_E(proc* p) { return SWAP(p, &p->de.r8.low); }
-int SWAP_H(proc* p) { return SWAP(p, &p->hl.r8.high); }
-int SWAP_L(proc* p) { return SWAP(p, &p->hl.r8.low); }
-int SWAP_HL(proc* p) { return SWAP(p, get_mem_ref(p->hl.r16)); }
-int SWAP_A(proc* p) { return SWAP(p, &p->af.r8.high); }
+int SWAP_B() { return SWAP(&p.bc.r8.high); }
+int SWAP_C() { return SWAP(&p.bc.r8.low); }
+int SWAP_D() { return SWAP(&p.de.r8.high); }
+int SWAP_E() { return SWAP(&p.de.r8.low); }
+int SWAP_H() { return SWAP(&p.hl.r8.high); }
+int SWAP_L() { return SWAP(&p.hl.r8.low); }
+int SWAP_HL() { return SWAP(get_mem_ref(p.hl.r16)); }
+int SWAP_A() { return SWAP(&p.af.r8.high); }
 
-int test_bit(proc* p, uint8_t* r, uint8_t bit)
+int test_bit(uint8_t r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
-  set_flag(p, ZERO, !(*r & bitmask));
-  clear_flags(p, SUBTRACT);
-  set_flag(p, HALF_CARRY, 1);
+  set_flag(&p, ZERO, !(r & bitmask));
+  clear_flags(&p, SUBTRACT);
+  set_flag(&p, HALF_CARRY, 1);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int test_bit_0_B(proc* p) { return test_bit(p, &p->bc.r8.high, 0); }
-int test_bit_1_B(proc* p) { return test_bit(p, &p->bc.r8.high, 1); }
-int test_bit_2_B(proc* p) { return test_bit(p, &p->bc.r8.high, 2); }
-int test_bit_3_B(proc* p) { return test_bit(p, &p->bc.r8.high, 3); }
-int test_bit_4_B(proc* p) { return test_bit(p, &p->bc.r8.high, 4); }
-int test_bit_5_B(proc* p) { return test_bit(p, &p->bc.r8.high, 5); }
-int test_bit_6_B(proc* p) { return test_bit(p, &p->bc.r8.high, 6); }
-int test_bit_7_B(proc* p) { return test_bit(p, &p->bc.r8.high, 7); }
+int test_bit_0_B() { return test_bit(p.bc.r8.high, 0); }
+int test_bit_1_B() { return test_bit(p.bc.r8.high, 1); }
+int test_bit_2_B() { return test_bit(p.bc.r8.high, 2); }
+int test_bit_3_B() { return test_bit(p.bc.r8.high, 3); }
+int test_bit_4_B() { return test_bit(p.bc.r8.high, 4); }
+int test_bit_5_B() { return test_bit(p.bc.r8.high, 5); }
+int test_bit_6_B() { return test_bit(p.bc.r8.high, 6); }
+int test_bit_7_B() { return test_bit(p.bc.r8.high, 7); }
 
-int test_bit_0_C(proc* p) { return test_bit(p, &p->bc.r8.low, 0); }
-int test_bit_1_C(proc* p) { return test_bit(p, &p->bc.r8.low, 1); }
-int test_bit_2_C(proc* p) { return test_bit(p, &p->bc.r8.low, 2); }
-int test_bit_3_C(proc* p) { return test_bit(p, &p->bc.r8.low, 3); }
-int test_bit_4_C(proc* p) { return test_bit(p, &p->bc.r8.low, 4); }
-int test_bit_5_C(proc* p) { return test_bit(p, &p->bc.r8.low, 5); }
-int test_bit_6_C(proc* p) { return test_bit(p, &p->bc.r8.low, 6); }
-int test_bit_7_C(proc* p) { return test_bit(p, &p->bc.r8.low, 7); }
+int test_bit_0_C() { return test_bit(p.bc.r8.low, 0); }
+int test_bit_1_C() { return test_bit(p.bc.r8.low, 1); }
+int test_bit_2_C() { return test_bit(p.bc.r8.low, 2); }
+int test_bit_3_C() { return test_bit(p.bc.r8.low, 3); }
+int test_bit_4_C() { return test_bit(p.bc.r8.low, 4); }
+int test_bit_5_C() { return test_bit(p.bc.r8.low, 5); }
+int test_bit_6_C() { return test_bit(p.bc.r8.low, 6); }
+int test_bit_7_C() { return test_bit(p.bc.r8.low, 7); }
 
-int test_bit_0_D(proc* p) { return test_bit(p, &p->de.r8.high, 0); }
-int test_bit_1_D(proc* p) { return test_bit(p, &p->de.r8.high, 1); }
-int test_bit_2_D(proc* p) { return test_bit(p, &p->de.r8.high, 2); }
-int test_bit_3_D(proc* p) { return test_bit(p, &p->de.r8.high, 3); }
-int test_bit_4_D(proc* p) { return test_bit(p, &p->de.r8.high, 4); }
-int test_bit_5_D(proc* p) { return test_bit(p, &p->de.r8.high, 5); }
-int test_bit_6_D(proc* p) { return test_bit(p, &p->de.r8.high, 6); }
-int test_bit_7_D(proc* p) { return test_bit(p, &p->de.r8.high, 7); }
+int test_bit_0_D() { return test_bit(p.de.r8.high, 0); }
+int test_bit_1_D() { return test_bit(p.de.r8.high, 1); }
+int test_bit_2_D() { return test_bit(p.de.r8.high, 2); }
+int test_bit_3_D() { return test_bit(p.de.r8.high, 3); }
+int test_bit_4_D() { return test_bit(p.de.r8.high, 4); }
+int test_bit_5_D() { return test_bit(p.de.r8.high, 5); }
+int test_bit_6_D() { return test_bit(p.de.r8.high, 6); }
+int test_bit_7_D() { return test_bit(p.de.r8.high, 7); }
 
-int test_bit_0_E(proc* p) { return test_bit(p, &p->de.r8.low, 0); }
-int test_bit_1_E(proc* p) { return test_bit(p, &p->de.r8.low, 1); }
-int test_bit_2_E(proc* p) { return test_bit(p, &p->de.r8.low, 2); }
-int test_bit_3_E(proc* p) { return test_bit(p, &p->de.r8.low, 3); }
-int test_bit_4_E(proc* p) { return test_bit(p, &p->de.r8.low, 4); }
-int test_bit_5_E(proc* p) { return test_bit(p, &p->de.r8.low, 5); }
-int test_bit_6_E(proc* p) { return test_bit(p, &p->de.r8.low, 6); }
-int test_bit_7_E(proc* p) { return test_bit(p, &p->de.r8.low, 7); }
+int test_bit_0_E() { return test_bit(p.de.r8.low, 0); }
+int test_bit_1_E() { return test_bit(p.de.r8.low, 1); }
+int test_bit_2_E() { return test_bit(p.de.r8.low, 2); }
+int test_bit_3_E() { return test_bit(p.de.r8.low, 3); }
+int test_bit_4_E() { return test_bit(p.de.r8.low, 4); }
+int test_bit_5_E() { return test_bit(p.de.r8.low, 5); }
+int test_bit_6_E() { return test_bit(p.de.r8.low, 6); }
+int test_bit_7_E() { return test_bit(p.de.r8.low, 7); }
 
-int test_bit_0_A(proc* p) { return test_bit(p, &p->af.r8.high, 0); }
-int test_bit_1_A(proc* p) { return test_bit(p, &p->af.r8.high, 1); }
-int test_bit_2_A(proc* p) { return test_bit(p, &p->af.r8.high, 2); }
-int test_bit_3_A(proc* p) { return test_bit(p, &p->af.r8.high, 3); }
-int test_bit_4_A(proc* p) { return test_bit(p, &p->af.r8.high, 4); }
-int test_bit_5_A(proc* p) { return test_bit(p, &p->af.r8.high, 5); }
-int test_bit_6_A(proc* p) { return test_bit(p, &p->af.r8.high, 6); }
-int test_bit_7_A(proc* p) { return test_bit(p, &p->af.r8.high, 7); }
+int test_bit_0_A() { return test_bit(p.af.r8.high, 0); }
+int test_bit_1_A() { return test_bit(p.af.r8.high, 1); }
+int test_bit_2_A() { return test_bit(p.af.r8.high, 2); }
+int test_bit_3_A() { return test_bit(p.af.r8.high, 3); }
+int test_bit_4_A() { return test_bit(p.af.r8.high, 4); }
+int test_bit_5_A() { return test_bit(p.af.r8.high, 5); }
+int test_bit_6_A() { return test_bit(p.af.r8.high, 6); }
+int test_bit_7_A() { return test_bit(p.af.r8.high, 7); }
 
-int test_bit_0_H(proc* p) { return test_bit(p, &p->hl.r8.high, 0); }
-int test_bit_1_H(proc* p) { return test_bit(p, &p->hl.r8.high, 1); }
-int test_bit_2_H(proc* p) { return test_bit(p, &p->hl.r8.high, 2); }
-int test_bit_3_H(proc* p) { return test_bit(p, &p->hl.r8.high, 3); }
-int test_bit_4_H(proc* p) { return test_bit(p, &p->hl.r8.high, 4); }
-int test_bit_5_H(proc* p) { return test_bit(p, &p->hl.r8.high, 5); }
-int test_bit_6_H(proc* p) { return test_bit(p, &p->hl.r8.high, 6); }
-int test_bit_7_H(proc* p) { return test_bit(p, &p->hl.r8.high, 7); }
+int test_bit_0_H() { return test_bit(p.hl.r8.high, 0); }
+int test_bit_1_H() { return test_bit(p.hl.r8.high, 1); }
+int test_bit_2_H() { return test_bit(p.hl.r8.high, 2); }
+int test_bit_3_H() { return test_bit(p.hl.r8.high, 3); }
+int test_bit_4_H() { return test_bit(p.hl.r8.high, 4); }
+int test_bit_5_H() { return test_bit(p.hl.r8.high, 5); }
+int test_bit_6_H() { return test_bit(p.hl.r8.high, 6); }
+int test_bit_7_H() { return test_bit(p.hl.r8.high, 7); }
 
-int test_bit_0_L(proc* p) { return test_bit(p, &p->hl.r8.low, 0); }
-int test_bit_1_L(proc* p) { return test_bit(p, &p->hl.r8.low, 1); }
-int test_bit_2_L(proc* p) { return test_bit(p, &p->hl.r8.low, 2); }
-int test_bit_3_L(proc* p) { return test_bit(p, &p->hl.r8.low, 3); }
-int test_bit_4_L(proc* p) { return test_bit(p, &p->hl.r8.low, 4); }
-int test_bit_5_L(proc* p) { return test_bit(p, &p->hl.r8.low, 5); }
-int test_bit_6_L(proc* p) { return test_bit(p, &p->hl.r8.low, 6); }
-int test_bit_7_L(proc* p) { return test_bit(p, &p->hl.r8.low, 7); }
+int test_bit_0_L() { return test_bit(p.hl.r8.low, 0); }
+int test_bit_1_L() { return test_bit(p.hl.r8.low, 1); }
+int test_bit_2_L() { return test_bit(p.hl.r8.low, 2); }
+int test_bit_3_L() { return test_bit(p.hl.r8.low, 3); }
+int test_bit_4_L() { return test_bit(p.hl.r8.low, 4); }
+int test_bit_5_L() { return test_bit(p.hl.r8.low, 5); }
+int test_bit_6_L() { return test_bit(p.hl.r8.low, 6); }
+int test_bit_7_L() { return test_bit(p.hl.r8.low, 7); }
 
-int test_bit_0_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 0); }
-int test_bit_1_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 1); }
-int test_bit_2_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 2); }
-int test_bit_3_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 3); }
-int test_bit_4_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 4); }
-int test_bit_5_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 5); }
-int test_bit_6_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 6); }
-int test_bit_7_HL(proc* p) { return test_bit(p, get_mem_ref(p->hl.r16), 7); }
+int test_bit_0_HL() { return test_bit(read_from_mem(p.hl.r16), 0); }
+int test_bit_1_HL() { return test_bit(read_from_mem(p.hl.r16), 1); }
+int test_bit_2_HL() { return test_bit(read_from_mem(p.hl.r16), 2); }
+int test_bit_3_HL() { return test_bit(read_from_mem(p.hl.r16), 3); }
+int test_bit_4_HL() { return test_bit(read_from_mem(p.hl.r16), 4); }
+int test_bit_5_HL() { return test_bit(read_from_mem(p.hl.r16), 5); }
+int test_bit_6_HL() { return test_bit(read_from_mem(p.hl.r16), 6); }
+int test_bit_7_HL() { return test_bit(read_from_mem(p.hl.r16), 7); }
 
-int set_bit(proc* p, uint8_t* r, uint8_t bit)
+int set_bit(uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
   *r |= bitmask;
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int set_bit_0_B(proc* p) { return set_bit(p, &p->bc.r8.high, 0); }
-int set_bit_1_B(proc* p) { return set_bit(p, &p->bc.r8.high, 1); }
-int set_bit_2_B(proc* p) { return set_bit(p, &p->bc.r8.high, 2); }
-int set_bit_3_B(proc* p) { return set_bit(p, &p->bc.r8.high, 3); }
-int set_bit_4_B(proc* p) { return set_bit(p, &p->bc.r8.high, 4); }
-int set_bit_5_B(proc* p) { return set_bit(p, &p->bc.r8.high, 5); }
-int set_bit_6_B(proc* p) { return set_bit(p, &p->bc.r8.high, 6); }
-int set_bit_7_B(proc* p) { return set_bit(p, &p->bc.r8.high, 7); }
+int set_bit_0_B() { return set_bit(&p.bc.r8.high, 0); }
+int set_bit_1_B() { return set_bit(&p.bc.r8.high, 1); }
+int set_bit_2_B() { return set_bit(&p.bc.r8.high, 2); }
+int set_bit_3_B() { return set_bit(&p.bc.r8.high, 3); }
+int set_bit_4_B() { return set_bit(&p.bc.r8.high, 4); }
+int set_bit_5_B() { return set_bit(&p.bc.r8.high, 5); }
+int set_bit_6_B() { return set_bit(&p.bc.r8.high, 6); }
+int set_bit_7_B() { return set_bit(&p.bc.r8.high, 7); }
 
-int set_bit_0_C(proc* p) { return set_bit(p, &p->bc.r8.low, 0); }
-int set_bit_1_C(proc* p) { return set_bit(p, &p->bc.r8.low, 1); }
-int set_bit_2_C(proc* p) { return set_bit(p, &p->bc.r8.low, 2); }
-int set_bit_3_C(proc* p) { return set_bit(p, &p->bc.r8.low, 3); }
-int set_bit_4_C(proc* p) { return set_bit(p, &p->bc.r8.low, 4); }
-int set_bit_5_C(proc* p) { return set_bit(p, &p->bc.r8.low, 5); }
-int set_bit_6_C(proc* p) { return set_bit(p, &p->bc.r8.low, 6); }
-int set_bit_7_C(proc* p) { return set_bit(p, &p->bc.r8.low, 7); }
+int set_bit_0_C() { return set_bit(&p.bc.r8.low, 0); }
+int set_bit_1_C() { return set_bit(&p.bc.r8.low, 1); }
+int set_bit_2_C() { return set_bit(&p.bc.r8.low, 2); }
+int set_bit_3_C() { return set_bit(&p.bc.r8.low, 3); }
+int set_bit_4_C() { return set_bit(&p.bc.r8.low, 4); }
+int set_bit_5_C() { return set_bit(&p.bc.r8.low, 5); }
+int set_bit_6_C() { return set_bit(&p.bc.r8.low, 6); }
+int set_bit_7_C() { return set_bit(&p.bc.r8.low, 7); }
 
-int set_bit_0_D(proc* p) { return set_bit(p, &p->de.r8.high, 0); }
-int set_bit_1_D(proc* p) { return set_bit(p, &p->de.r8.high, 1); }
-int set_bit_2_D(proc* p) { return set_bit(p, &p->de.r8.high, 2); }
-int set_bit_3_D(proc* p) { return set_bit(p, &p->de.r8.high, 3); }
-int set_bit_4_D(proc* p) { return set_bit(p, &p->de.r8.high, 4); }
-int set_bit_5_D(proc* p) { return set_bit(p, &p->de.r8.high, 5); }
-int set_bit_6_D(proc* p) { return set_bit(p, &p->de.r8.high, 6); }
-int set_bit_7_D(proc* p) { return set_bit(p, &p->de.r8.high, 7); }
+int set_bit_0_D() { return set_bit(&p.de.r8.high, 0); }
+int set_bit_1_D() { return set_bit(&p.de.r8.high, 1); }
+int set_bit_2_D() { return set_bit(&p.de.r8.high, 2); }
+int set_bit_3_D() { return set_bit(&p.de.r8.high, 3); }
+int set_bit_4_D() { return set_bit(&p.de.r8.high, 4); }
+int set_bit_5_D() { return set_bit(&p.de.r8.high, 5); }
+int set_bit_6_D() { return set_bit(&p.de.r8.high, 6); }
+int set_bit_7_D() { return set_bit(&p.de.r8.high, 7); }
 
-int set_bit_0_E(proc* p) { return set_bit(p, &p->de.r8.low, 0); }
-int set_bit_1_E(proc* p) { return set_bit(p, &p->de.r8.low, 1); }
-int set_bit_2_E(proc* p) { return set_bit(p, &p->de.r8.low, 2); }
-int set_bit_3_E(proc* p) { return set_bit(p, &p->de.r8.low, 3); }
-int set_bit_4_E(proc* p) { return set_bit(p, &p->de.r8.low, 4); }
-int set_bit_5_E(proc* p) { return set_bit(p, &p->de.r8.low, 5); }
-int set_bit_6_E(proc* p) { return set_bit(p, &p->de.r8.low, 6); }
-int set_bit_7_E(proc* p) { return set_bit(p, &p->de.r8.low, 7); }
+int set_bit_0_E() { return set_bit(&p.de.r8.low, 0); }
+int set_bit_1_E() { return set_bit(&p.de.r8.low, 1); }
+int set_bit_2_E() { return set_bit(&p.de.r8.low, 2); }
+int set_bit_3_E() { return set_bit(&p.de.r8.low, 3); }
+int set_bit_4_E() { return set_bit(&p.de.r8.low, 4); }
+int set_bit_5_E() { return set_bit(&p.de.r8.low, 5); }
+int set_bit_6_E() { return set_bit(&p.de.r8.low, 6); }
+int set_bit_7_E() { return set_bit(&p.de.r8.low, 7); }
 
-int set_bit_0_A(proc* p) { return set_bit(p, &p->af.r8.high, 0); }
-int set_bit_1_A(proc* p) { return set_bit(p, &p->af.r8.high, 1); }
-int set_bit_2_A(proc* p) { return set_bit(p, &p->af.r8.high, 2); }
-int set_bit_3_A(proc* p) { return set_bit(p, &p->af.r8.high, 3); }
-int set_bit_4_A(proc* p) { return set_bit(p, &p->af.r8.high, 4); }
-int set_bit_5_A(proc* p) { return set_bit(p, &p->af.r8.high, 5); }
-int set_bit_6_A(proc* p) { return set_bit(p, &p->af.r8.high, 6); }
-int set_bit_7_A(proc* p) { return set_bit(p, &p->af.r8.high, 7); }
+int set_bit_0_A() { return set_bit(&p.af.r8.high, 0); }
+int set_bit_1_A() { return set_bit(&p.af.r8.high, 1); }
+int set_bit_2_A() { return set_bit(&p.af.r8.high, 2); }
+int set_bit_3_A() { return set_bit(&p.af.r8.high, 3); }
+int set_bit_4_A() { return set_bit(&p.af.r8.high, 4); }
+int set_bit_5_A() { return set_bit(&p.af.r8.high, 5); }
+int set_bit_6_A() { return set_bit(&p.af.r8.high, 6); }
+int set_bit_7_A() { return set_bit(&p.af.r8.high, 7); }
 
-int set_bit_0_H(proc* p) { return set_bit(p, &p->hl.r8.high, 0); }
-int set_bit_1_H(proc* p) { return set_bit(p, &p->hl.r8.high, 1); }
-int set_bit_2_H(proc* p) { return set_bit(p, &p->hl.r8.high, 2); }
-int set_bit_3_H(proc* p) { return set_bit(p, &p->hl.r8.high, 3); }
-int set_bit_4_H(proc* p) { return set_bit(p, &p->hl.r8.high, 4); }
-int set_bit_5_H(proc* p) { return set_bit(p, &p->hl.r8.high, 5); }
-int set_bit_6_H(proc* p) { return set_bit(p, &p->hl.r8.high, 6); }
-int set_bit_7_H(proc* p) { return set_bit(p, &p->hl.r8.high, 7); }
+int set_bit_0_H() { return set_bit(&p.hl.r8.high, 0); }
+int set_bit_1_H() { return set_bit(&p.hl.r8.high, 1); }
+int set_bit_2_H() { return set_bit(&p.hl.r8.high, 2); }
+int set_bit_3_H() { return set_bit(&p.hl.r8.high, 3); }
+int set_bit_4_H() { return set_bit(&p.hl.r8.high, 4); }
+int set_bit_5_H() { return set_bit(&p.hl.r8.high, 5); }
+int set_bit_6_H() { return set_bit(&p.hl.r8.high, 6); }
+int set_bit_7_H() { return set_bit(&p.hl.r8.high, 7); }
 
-int set_bit_0_L(proc* p) { return set_bit(p, &p->hl.r8.low, 0); }
-int set_bit_1_L(proc* p) { return set_bit(p, &p->hl.r8.low, 1); }
-int set_bit_2_L(proc* p) { return set_bit(p, &p->hl.r8.low, 2); }
-int set_bit_3_L(proc* p) { return set_bit(p, &p->hl.r8.low, 3); }
-int set_bit_4_L(proc* p) { return set_bit(p, &p->hl.r8.low, 4); }
-int set_bit_5_L(proc* p) { return set_bit(p, &p->hl.r8.low, 5); }
-int set_bit_6_L(proc* p) { return set_bit(p, &p->hl.r8.low, 6); }
-int set_bit_7_L(proc* p) { return set_bit(p, &p->hl.r8.low, 7); }
+int set_bit_0_L() { return set_bit(&p.hl.r8.low, 0); }
+int set_bit_1_L() { return set_bit(&p.hl.r8.low, 1); }
+int set_bit_2_L() { return set_bit(&p.hl.r8.low, 2); }
+int set_bit_3_L() { return set_bit(&p.hl.r8.low, 3); }
+int set_bit_4_L() { return set_bit(&p.hl.r8.low, 4); }
+int set_bit_5_L() { return set_bit(&p.hl.r8.low, 5); }
+int set_bit_6_L() { return set_bit(&p.hl.r8.low, 6); }
+int set_bit_7_L() { return set_bit(&p.hl.r8.low, 7); }
 
-int set_bit_0_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 0); }
-int set_bit_1_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 1); }
-int set_bit_2_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 2); }
-int set_bit_3_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 3); }
-int set_bit_4_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 4); }
-int set_bit_5_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 5); }
-int set_bit_6_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 6); }
-int set_bit_7_HL(proc* p) { return set_bit(p, get_mem_ref(p->hl.r16), 7); }
+int set_bit_0_HL() { return set_bit(get_mem_ref(p.hl.r16), 0); }
+int set_bit_1_HL() { return set_bit(get_mem_ref(p.hl.r16), 1); }
+int set_bit_2_HL() { return set_bit(get_mem_ref(p.hl.r16), 2); }
+int set_bit_3_HL() { return set_bit(get_mem_ref(p.hl.r16), 3); }
+int set_bit_4_HL() { return set_bit(get_mem_ref(p.hl.r16), 4); }
+int set_bit_5_HL() { return set_bit(get_mem_ref(p.hl.r16), 5); }
+int set_bit_6_HL() { return set_bit(get_mem_ref(p.hl.r16), 6); }
+int set_bit_7_HL() { return set_bit(get_mem_ref(p.hl.r16), 7); }
 
-int reset_bit(proc* p, uint8_t* r, uint8_t bit)
+int reset_bit(uint8_t* r, uint8_t bit)
 {
   uint8_t bitmask = 1 << bit;
   *r &= ~bitmask;
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int reset_bit_0_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 0); }
-int reset_bit_1_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 1); }
-int reset_bit_2_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 2); }
-int reset_bit_3_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 3); }
-int reset_bit_4_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 4); }
-int reset_bit_5_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 5); }
-int reset_bit_6_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 6); }
-int reset_bit_7_B(proc* p) { return reset_bit(p, &p->bc.r8.high, 7); }
+int reset_bit_0_B() { return reset_bit(&p.bc.r8.high, 0); }
+int reset_bit_1_B() { return reset_bit(&p.bc.r8.high, 1); }
+int reset_bit_2_B() { return reset_bit(&p.bc.r8.high, 2); }
+int reset_bit_3_B() { return reset_bit(&p.bc.r8.high, 3); }
+int reset_bit_4_B() { return reset_bit(&p.bc.r8.high, 4); }
+int reset_bit_5_B() { return reset_bit(&p.bc.r8.high, 5); }
+int reset_bit_6_B() { return reset_bit(&p.bc.r8.high, 6); }
+int reset_bit_7_B() { return reset_bit(&p.bc.r8.high, 7); }
 
-int reset_bit_0_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 0); }
-int reset_bit_1_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 1); }
-int reset_bit_2_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 2); }
-int reset_bit_3_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 3); }
-int reset_bit_4_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 4); }
-int reset_bit_5_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 5); }
-int reset_bit_6_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 6); }
-int reset_bit_7_C(proc* p) { return reset_bit(p, &p->bc.r8.low, 7); }
+int reset_bit_0_C() { return reset_bit(&p.bc.r8.low, 0); }
+int reset_bit_1_C() { return reset_bit(&p.bc.r8.low, 1); }
+int reset_bit_2_C() { return reset_bit(&p.bc.r8.low, 2); }
+int reset_bit_3_C() { return reset_bit(&p.bc.r8.low, 3); }
+int reset_bit_4_C() { return reset_bit(&p.bc.r8.low, 4); }
+int reset_bit_5_C() { return reset_bit(&p.bc.r8.low, 5); }
+int reset_bit_6_C() { return reset_bit(&p.bc.r8.low, 6); }
+int reset_bit_7_C() { return reset_bit(&p.bc.r8.low, 7); }
 
-int reset_bit_0_D(proc* p) { return reset_bit(p, &p->de.r8.high, 0); }
-int reset_bit_1_D(proc* p) { return reset_bit(p, &p->de.r8.high, 1); }
-int reset_bit_2_D(proc* p) { return reset_bit(p, &p->de.r8.high, 2); }
-int reset_bit_3_D(proc* p) { return reset_bit(p, &p->de.r8.high, 3); }
-int reset_bit_4_D(proc* p) { return reset_bit(p, &p->de.r8.high, 4); }
-int reset_bit_5_D(proc* p) { return reset_bit(p, &p->de.r8.high, 5); }
-int reset_bit_6_D(proc* p) { return reset_bit(p, &p->de.r8.high, 6); }
-int reset_bit_7_D(proc* p) { return reset_bit(p, &p->de.r8.high, 7); }
+int reset_bit_0_D() { return reset_bit(&p.de.r8.high, 0); }
+int reset_bit_1_D() { return reset_bit(&p.de.r8.high, 1); }
+int reset_bit_2_D() { return reset_bit(&p.de.r8.high, 2); }
+int reset_bit_3_D() { return reset_bit(&p.de.r8.high, 3); }
+int reset_bit_4_D() { return reset_bit(&p.de.r8.high, 4); }
+int reset_bit_5_D() { return reset_bit(&p.de.r8.high, 5); }
+int reset_bit_6_D() { return reset_bit(&p.de.r8.high, 6); }
+int reset_bit_7_D() { return reset_bit(&p.de.r8.high, 7); }
 
-int reset_bit_0_E(proc* p) { return reset_bit(p, &p->de.r8.low, 0); }
-int reset_bit_1_E(proc* p) { return reset_bit(p, &p->de.r8.low, 1); }
-int reset_bit_2_E(proc* p) { return reset_bit(p, &p->de.r8.low, 2); }
-int reset_bit_3_E(proc* p) { return reset_bit(p, &p->de.r8.low, 3); }
-int reset_bit_4_E(proc* p) { return reset_bit(p, &p->de.r8.low, 4); }
-int reset_bit_5_E(proc* p) { return reset_bit(p, &p->de.r8.low, 5); }
-int reset_bit_6_E(proc* p) { return reset_bit(p, &p->de.r8.low, 6); }
-int reset_bit_7_E(proc* p) { return reset_bit(p, &p->de.r8.low, 7); }
+int reset_bit_0_E() { return reset_bit(&p.de.r8.low, 0); }
+int reset_bit_1_E() { return reset_bit(&p.de.r8.low, 1); }
+int reset_bit_2_E() { return reset_bit(&p.de.r8.low, 2); }
+int reset_bit_3_E() { return reset_bit(&p.de.r8.low, 3); }
+int reset_bit_4_E() { return reset_bit(&p.de.r8.low, 4); }
+int reset_bit_5_E() { return reset_bit(&p.de.r8.low, 5); }
+int reset_bit_6_E() { return reset_bit(&p.de.r8.low, 6); }
+int reset_bit_7_E() { return reset_bit(&p.de.r8.low, 7); }
 
-int reset_bit_0_A(proc* p) { return reset_bit(p, &p->af.r8.high, 0); }
-int reset_bit_1_A(proc* p) { return reset_bit(p, &p->af.r8.high, 1); }
-int reset_bit_2_A(proc* p) { return reset_bit(p, &p->af.r8.high, 2); }
-int reset_bit_3_A(proc* p) { return reset_bit(p, &p->af.r8.high, 3); }
-int reset_bit_4_A(proc* p) { return reset_bit(p, &p->af.r8.high, 4); }
-int reset_bit_5_A(proc* p) { return reset_bit(p, &p->af.r8.high, 5); }
-int reset_bit_6_A(proc* p) { return reset_bit(p, &p->af.r8.high, 6); }
-int reset_bit_7_A(proc* p) { return reset_bit(p, &p->af.r8.high, 7); }
+int reset_bit_0_A() { return reset_bit(&p.af.r8.high, 0); }
+int reset_bit_1_A() { return reset_bit(&p.af.r8.high, 1); }
+int reset_bit_2_A() { return reset_bit(&p.af.r8.high, 2); }
+int reset_bit_3_A() { return reset_bit(&p.af.r8.high, 3); }
+int reset_bit_4_A() { return reset_bit(&p.af.r8.high, 4); }
+int reset_bit_5_A() { return reset_bit(&p.af.r8.high, 5); }
+int reset_bit_6_A() { return reset_bit(&p.af.r8.high, 6); }
+int reset_bit_7_A() { return reset_bit(&p.af.r8.high, 7); }
 
-int reset_bit_0_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 0); }
-int reset_bit_1_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 1); }
-int reset_bit_2_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 2); }
-int reset_bit_3_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 3); }
-int reset_bit_4_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 4); }
-int reset_bit_5_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 5); }
-int reset_bit_6_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 6); }
-int reset_bit_7_H(proc* p) { return reset_bit(p, &p->hl.r8.high, 7); }
+int reset_bit_0_H() { return reset_bit(&p.hl.r8.high, 0); }
+int reset_bit_1_H() { return reset_bit(&p.hl.r8.high, 1); }
+int reset_bit_2_H() { return reset_bit(&p.hl.r8.high, 2); }
+int reset_bit_3_H() { return reset_bit(&p.hl.r8.high, 3); }
+int reset_bit_4_H() { return reset_bit(&p.hl.r8.high, 4); }
+int reset_bit_5_H() { return reset_bit(&p.hl.r8.high, 5); }
+int reset_bit_6_H() { return reset_bit(&p.hl.r8.high, 6); }
+int reset_bit_7_H() { return reset_bit(&p.hl.r8.high, 7); }
 
-int reset_bit_0_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 0); }
-int reset_bit_1_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 1); }
-int reset_bit_2_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 2); }
-int reset_bit_3_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 3); }
-int reset_bit_4_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 4); }
-int reset_bit_5_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 5); }
-int reset_bit_6_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 6); }
-int reset_bit_7_L(proc* p) { return reset_bit(p, &p->hl.r8.low, 7); }
+int reset_bit_0_L() { return reset_bit(&p.hl.r8.low, 0); }
+int reset_bit_1_L() { return reset_bit(&p.hl.r8.low, 1); }
+int reset_bit_2_L() { return reset_bit(&p.hl.r8.low, 2); }
+int reset_bit_3_L() { return reset_bit(&p.hl.r8.low, 3); }
+int reset_bit_4_L() { return reset_bit(&p.hl.r8.low, 4); }
+int reset_bit_5_L() { return reset_bit(&p.hl.r8.low, 5); }
+int reset_bit_6_L() { return reset_bit(&p.hl.r8.low, 6); }
+int reset_bit_7_L() { return reset_bit(&p.hl.r8.low, 7); }
 
-int reset_bit_0_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 0); }
-int reset_bit_1_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 1); }
-int reset_bit_2_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 2); }
-int reset_bit_3_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 3); }
-int reset_bit_4_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 4); }
-int reset_bit_5_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 5); }
-int reset_bit_6_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 6); }
-int reset_bit_7_HL(proc* p) { return reset_bit(p, get_mem_ref(p->hl.r16), 7); }
+int reset_bit_0_HL() { return reset_bit(get_mem_ref(p.hl.r16), 0); }
+int reset_bit_1_HL() { return reset_bit(get_mem_ref(p.hl.r16), 1); }
+int reset_bit_2_HL() { return reset_bit(get_mem_ref(p.hl.r16), 2); }
+int reset_bit_3_HL() { return reset_bit(get_mem_ref(p.hl.r16), 3); }
+int reset_bit_4_HL() { return reset_bit(get_mem_ref(p.hl.r16), 4); }
+int reset_bit_5_HL() { return reset_bit(get_mem_ref(p.hl.r16), 5); }
+int reset_bit_6_HL() { return reset_bit(get_mem_ref(p.hl.r16), 6); }
+int reset_bit_7_HL() { return reset_bit(get_mem_ref(p.hl.r16), 7); }
 
 uint8_t calculate_half_carry(int v1, int v2)
 {
@@ -573,767 +606,766 @@ uint8_t calculate_carry(int v1, int v2)
     return 0;
 }
 
-int DI(proc* p)
+int DI()
 {
-  p->interrupts_enabled = 0;
+  p.interrupts_enabled = 0;
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int EI(proc* p)
+int EI()
 {
-  p->interrupts_enabled = 1;
+  p.interrupts_enabled = 1;
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int INC_r8(proc* p, uint8_t* r)
+int INC_r8(uint8_t* r)
 {
-  set_flag(p, HALF_CARRY, calculate_half_carry(*r, 1));
+  set_flag(&p, HALF_CARRY, calculate_half_carry(*r, 1));
 
   (*r)++;
 
   if (*r == 0)
-    set_flag(p, ZERO, 1);
+    set_flag(&p, ZERO, 1);
   else
-    clear_flags(p, ZERO);
-  clear_flags(p, SUBTRACT);
+    clear_flags(&p, ZERO);
+  clear_flags(&p, SUBTRACT);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int INC_B(proc* p) { return INC_r8(p, &p->bc.r8.high); }
-int INC_D(proc* p) { return INC_r8(p, &p->de.r8.high); }
-int INC_H(proc* p) { return INC_r8(p, &p->hl.r8.high); }
-int INC_mHL(proc* p) { return INC_r8(p, get_mem_ref(p->hl.r16)); }
+int INC_B() { return INC_r8(&p.bc.r8.high); }
+int INC_D() { return INC_r8(&p.de.r8.high); }
+int INC_H() { return INC_r8(&p.hl.r8.high); }
+int INC_mHL() { return INC_r8(get_mem_ref(p.hl.r16)); }
 
-int INC_C(proc* p) { return INC_r8(p, &p->bc.r8.low); }
-int INC_E(proc* p) { return INC_r8(p, &p->de.r8.low); }
-int INC_L(proc* p) { return INC_r8(p, &p->hl.r8.low); }
-int INC_A(proc* p) { return INC_r8(p, &p->af.r8.high); }
+int INC_C() { return INC_r8(&p.bc.r8.low); }
+int INC_E() { return INC_r8(&p.de.r8.low); }
+int INC_L() { return INC_r8(&p.hl.r8.low); }
+int INC_A() { return INC_r8(&p.af.r8.high); }
 
-int DEC_r8(proc* p, uint8_t* r)
+int DEC_r8(uint8_t* r)
 {
-  set_flag(p, HALF_CARRY, *r < 1);
+  set_flag(&p, HALF_CARRY, *r < 1);
 
   (*r)--;
 
   if (*r == 0)
-    set_flag(p, ZERO, 1);
+    set_flag(&p, ZERO, 1);
   else
-    clear_flags(p, ZERO);
-  set_flag(p, SUBTRACT, 1);
+    clear_flags(&p, ZERO);
+  set_flag(&p, SUBTRACT, 1);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int DEC_B(proc* p) { return DEC_r8(p, &p->bc.r8.high); }
-int DEC_D(proc* p) { return DEC_r8(p, &p->de.r8.high); }
-int DEC_H(proc* p) { return DEC_r8(p, &p->hl.r8.high); }
-int DEC_mHL(proc* p) { return DEC_r8(p, get_mem_ref(p->hl.r16)); }
+int DEC_B() { return DEC_r8(&p.bc.r8.high); }
+int DEC_D() { return DEC_r8(&p.de.r8.high); }
+int DEC_H() { return DEC_r8(&p.hl.r8.high); }
+int DEC_mHL() { return DEC_r8(get_mem_ref(p.hl.r16)); }
 
-int DEC_C(proc* p) { return DEC_r8(p, &p->bc.r8.low); }
-int DEC_E(proc* p) { return DEC_r8(p, &p->de.r8.low); }
-int DEC_L(proc* p) { return DEC_r8(p, &p->hl.r8.low); }
-int DEC_A(proc* p) { return DEC_r8(p, &p->af.r8.high); }
+int DEC_C() { return DEC_r8(&p.bc.r8.low); }
+int DEC_E() { return DEC_r8(&p.de.r8.low); }
+int DEC_L() { return DEC_r8(&p.hl.r8.low); }
+int DEC_A() { return DEC_r8(&p.af.r8.high); }
 
-int LD_mHL_A_inc(proc* p)
+int LD_mHL_A_inc()
 {
-  write_to_mem(p->hl.r16++, p->af.r8.high);
+  write_to_mem(p.hl.r16++, p.af.r8.high);
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int LD_mHL_A_dec(proc* p)
+int LD_mHL_A_dec()
 {
-  write_to_mem(p->hl.r16--, p->af.r8.high);
+  write_to_mem(p.hl.r16--, p.af.r8.high);
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int LD_A_mHL_inc(proc* p)
+int LD_A_mHL_inc()
 {
-  p->af.r8.high = read_from_mem(p->hl.r16++);
+  p.af.r8.high = read_from_mem(p.hl.r16++);
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int LD_A_mHL_dec(proc* p)
+int LD_A_mHL_dec()
 {
-  p->af.r8.high = read_from_mem(p->hl.r16--);
+  p.af.r8.high = read_from_mem(p.hl.r16--);
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int LD_A_a16(proc* p)
+int LD_A_a16()
 {
-  uint16_t addr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
-  p->af.r8.high = read_from_mem(addr);
+  uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
+  p.af.r8.high = read_from_mem(addr);
 
-  p->pc += 3;
+  p.pc += 3;
   return 16;
 }
 
-int LD_mC_A(proc* p)
+int LD_mC_A()
 {
-  uint16_t addr = generate_address(p->bc.r8.low, 0xFF);
-  write_to_mem(addr, p->af.r8.high);
+  uint16_t addr = generate_address(p.bc.r8.low, 0xFF);
+  write_to_mem(addr, p.af.r8.high);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int LD_A_mC(proc* p)
+int LD_A_mC()
 {
-  uint16_t addr = generate_address(p->bc.r8.low, 0xFF);
-  p->af.r8.high = read_from_mem(addr);
+  uint16_t addr = generate_address(p.bc.r8.low, 0xFF);
+  p.af.r8.high = read_from_mem(addr);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int LD_a16_A(proc* p)
+int LD_a16_A()
 {
-  uint16_t addr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
-  write_to_mem(addr, p->af.r8.high);
+  uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
+  write_to_mem(addr, p.af.r8.high);
 
-  p->pc += 3;
+  p.pc += 3;
   return 16;
 }
 
-int INC_r16(proc* p, uint16_t* r)
+int INC_r16(uint16_t* r)
 {
   *r++;
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int INC_BC(proc* p) { return INC_r16(p, &p->bc.r16); }
-int INC_DE(proc* p) { return INC_r16(p, &p->de.r16); }
-int INC_HL(proc* p) { return INC_r16(p, &p->hl.r16); }
-int INC_SP(proc* p) { return INC_r16(p, &p->sp); }
+int INC_BC() { return INC_r16(&p.bc.r16); }
+int INC_DE() { return INC_r16(&p.de.r16); }
+int INC_HL() { return INC_r16(&p.hl.r16); }
+int INC_SP() { return INC_r16(&p.sp); }
 
-int DEC(proc* p, uint16_t* r)
+int DEC(uint16_t* r)
 {
   *r--;
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int DEC_BC(proc* p) { return DEC(p, &p->bc.r16); }
-int DEC_DE(proc* p) { return DEC(p, &p->de.r16); }
-int DEC_HL(proc* p) { return DEC(p, &p->hl.r16); }
-int DEC_SP(proc* p) { return DEC(p, &p->sp); }
+int DEC_BC() { return DEC(&p.bc.r16); }
+int DEC_DE() { return DEC(&p.de.r16); }
+int DEC_HL() { return DEC(&p.hl.r16); }
+int DEC_SP() { return DEC(&p.sp); }
 
-int LD_d8(proc* p, uint8_t* nn)
+int LD_d8(uint8_t* nn)
 {
-  *nn = read_from_mem(p->pc+1);
+  *nn = read_from_mem(p.pc+1);
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int LD_B(proc* p) { return LD_d8(p, &p->bc.r8.high); }
-int LD_D(proc* p) { return LD_d8(p, &p->de.r8.high); }
-int LD_H(proc* p) { return LD_d8(p, &p->hl.r8.high); }
-int LD_mHL(proc* p) { return LD_d8(p, get_mem_ref(p->hl.r16)); }
+int LD_B() { return LD_d8(&p.bc.r8.high); }
+int LD_D() { return LD_d8(&p.de.r8.high); }
+int LD_H() { return LD_d8(&p.hl.r8.high); }
+int LD_mHL() { return LD_d8(get_mem_ref(p.hl.r16)); }
 
-int LD_C(proc* p) { return LD_d8(p, &p->bc.r8.low); }
-int LD_E(proc* p) { return LD_d8(p, &p->de.r8.low); }
-int LD_L(proc* p) { return LD_d8(p, &p->hl.r8.low); }
-int LD_A(proc* p) { return LD_d8(p, &p->af.r8.high); }
+int LD_C() { return LD_d8(&p.bc.r8.low); }
+int LD_E() { return LD_d8(&p.de.r8.low); }
+int LD_L() { return LD_d8(&p.hl.r8.low); }
+int LD_A() { return LD_d8(&p.af.r8.high); }
 
-int LD_d16(proc* p, reg* r)
+int LD_d16(reg* r)
 {
-  r->r8.low = read_from_mem(p->pc+1);
-  r->r8.high = read_from_mem(p->pc+2);
+  r->r8.low = read_from_mem(p.pc+1);
+  r->r8.high = read_from_mem(p.pc+2);
 
-  p->pc += 3;
+  p.pc += 3;
   return 12;
 }
 
-int LD_BC(proc* p) { return LD_d16(p, &p->bc); }
-int LD_DE(proc* p) { return LD_d16(p, &p->de); }
-int LD_HL(proc* p) { return LD_d16(p, &p->hl); }
-int LD_SP(proc* p)
+int LD_BC() { return LD_d16(&p.bc); }
+int LD_DE() { return LD_d16(&p.de); }
+int LD_HL() { return LD_d16(&p.hl); }
+int LD_SP()
 {
-  uint8_t low = read_from_mem(p->pc+1);
-  uint8_t high = read_from_mem(p->pc+2);
+  uint8_t low = read_from_mem(p.pc+1);
+  uint8_t high = read_from_mem(p.pc+2);
 
-  p->sp = generate_address(low, high);
+  p.sp = generate_address(low, high);
 
-  p->pc += 3;
+  p.pc += 3;
   return 12;
 }
 
-int LDHL_SP_r8(proc* p)
+int LDHL_SP_r8()
 {
-  uint8_t d8 = read_from_mem(p->pc+1);
-  uint16_t res = p->sp + d8;
+  uint8_t d8 = read_from_mem(p.pc+1);
+  uint16_t res = p.sp + d8;
 
   uint8_t is_negative = (d8 & 0x80);
   if (is_negative)
   {
-    set_flag(p, HALF_CARRY, (res & 0x0F) <= (p->sp & 0x0F));
-    set_flag(p, CARRY, (res & 0xFF) <= (p->sp & 0xFF));
+    set_flag(&p, HALF_CARRY, (res & 0x0F) <= (p.sp & 0x0F));
+    set_flag(&p, CARRY, (res & 0xFF) <= (p.sp & 0xFF));
   }
   else
   {
-    int half_sum = (p->sp & 0x0F) + (d8 & 0x0F);
-    set_flag(p, HALF_CARRY, half_sum >= 0x100);
-    int sum = (p->sp & 0xFF) + d8;
-    set_flag(p, CARRY, sum >= 0x10000);
+    int half_sum = (p.sp & 0x0F) + (d8 & 0x0F);
+    set_flag(&p, HALF_CARRY, half_sum >= 0x100);
+    int sum = (p.sp & 0xFF) + d8;
+    set_flag(&p, CARRY, sum >= 0x10000);
   }
 
-  clear_flags(p, ZERO | SUBTRACT);
+  clear_flags(&p, ZERO | SUBTRACT);
 
-  p->hl.r16 = res;
+  p.hl.r16 = res;
 
-  p->pc += 2;
+  p.pc += 2;
   return 12;
 }
 
-int LD_reg_mem(proc* p, uint8_t* reg, uint8_t* mem)
+int LD_reg_mem(uint8_t* reg, uint8_t* mem)
 {
   *reg = *mem;
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int LD_mBC_A(proc* p) { return LD_reg_mem(p, get_mem_ref(p->bc.r16), &p->af.r8.high); }
-int LD_mDE_A(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->af.r8.high); }
-int LD_A_mBC(proc* p) { return LD_reg_mem(p, &p->af.r8.high, get_mem_ref(p->bc.r16)); }
-int LD_A_mDE(proc* p) { return LD_reg_mem(p, &p->af.r8.high, get_mem_ref(p->de.r16)); }
-int LD_B_mHL(proc* p) { return LD_reg_mem(p, &p->bc.r8.high, get_mem_ref(p->hl.r16)); }
-int LD_D_mHL(proc* p) { return LD_reg_mem(p, &p->de.r8.high, get_mem_ref(p->hl.r16)); }
-int LD_H_mHL(proc* p) { return LD_reg_mem(p, &p->hl.r8.high, get_mem_ref(p->hl.r16)); }
-int LD_C_mHL(proc* p) { return LD_reg_mem(p, &p->bc.r8.low, get_mem_ref(p->hl.r16)); }
-int LD_E_mHL(proc* p) { return LD_reg_mem(p, &p->de.r8.low, get_mem_ref(p->hl.r16)); }
-int LD_L_mHL(proc* p) { return LD_reg_mem(p, &p->hl.r8.low, get_mem_ref(p->hl.r16)); }
-int LD_A_mHL(proc* p) { return LD_reg_mem(p, &p->af.r8.low, get_mem_ref(p->hl.r16)); }
-int LD_mHL_B(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->bc.r8.high); }
-int LD_mHL_C(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->bc.r8.low); }
-int LD_mHL_D(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->de.r8.high); }
-int LD_mHL_E(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->de.r8.low); }
-int LD_mHL_H(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->hl.r8.high); }
-int LD_mHL_L(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->hl.r8.low); }
-int LD_mHL_A(proc* p) { return LD_reg_mem(p, get_mem_ref(p->de.r16), &p->af.r8.high); }
+int LD_mBC_A() { return LD_reg_mem(get_mem_ref(p.bc.r16), &p.af.r8.high); }
+int LD_mDE_A() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.af.r8.high); }
+int LD_A_mBC() { return LD_reg_mem(&p.af.r8.high, get_mem_ref(p.bc.r16)); }
+int LD_A_mDE() { return LD_reg_mem(&p.af.r8.high, get_mem_ref(p.de.r16)); }
+int LD_B_mHL() { return LD_reg_mem(&p.bc.r8.high, get_mem_ref(p.hl.r16)); }
+int LD_D_mHL() { return LD_reg_mem(&p.de.r8.high, get_mem_ref(p.hl.r16)); }
+int LD_H_mHL() { return LD_reg_mem(&p.hl.r8.high, get_mem_ref(p.hl.r16)); }
+int LD_C_mHL() { return LD_reg_mem(&p.bc.r8.low, get_mem_ref(p.hl.r16)); }
+int LD_E_mHL() { return LD_reg_mem(&p.de.r8.low, get_mem_ref(p.hl.r16)); }
+int LD_L_mHL() { return LD_reg_mem(&p.hl.r8.low, get_mem_ref(p.hl.r16)); }
+int LD_A_mHL() { return LD_reg_mem(&p.af.r8.low, get_mem_ref(p.hl.r16)); }
+int LD_mHL_B() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.bc.r8.high); }
+int LD_mHL_C() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.bc.r8.low); }
+int LD_mHL_D() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.de.r8.high); }
+int LD_mHL_E() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.de.r8.low); }
+int LD_mHL_H() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.hl.r8.high); }
+int LD_mHL_L() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.hl.r8.low); }
+int LD_mHL_A() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.af.r8.high); }
 
-int LD_reg(proc* p, uint8_t* r1, uint8_t* r2)
+int LD_reg(uint8_t* r1, uint8_t* r2)
 {
   *r1 = *r2;
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int LD_a16_SP(proc* p)
+int LD_a16_SP()
 {
-  uint8_t low_byte = read_from_mem(p->pc+1);
-  uint8_t high_byte = read_from_mem(p->pc+2);
+  uint8_t low_byte = read_from_mem(p.pc+1);
+  uint8_t high_byte = read_from_mem(p.pc+2);
   uint16_t addr = generate_address(low_byte, high_byte);
 
-  write_to_mem(addr, p->sp);
+  write_to_mem(addr, p.sp);
 
-  p->pc += 3;
+  p.pc += 3;
   return 20;
 }
 
-int LD_B_B(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.high); }
-int LD_B_C(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->bc.r8.low); }
-int LD_B_D(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.high); }
-int LD_B_E(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->de.r8.low); }
-int LD_B_H(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.high); }
-int LD_B_L(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->hl.r8.low); }
-int LD_B_A(proc* p) { return LD_reg(p, &p->bc.r8.high, &p->af.r8.high); }
+int LD_B_B() { return LD_reg(&p.bc.r8.high, &p.bc.r8.high); }
+int LD_B_C() { return LD_reg(&p.bc.r8.high, &p.bc.r8.low); }
+int LD_B_D() { return LD_reg(&p.bc.r8.high, &p.de.r8.high); }
+int LD_B_E() { return LD_reg(&p.bc.r8.high, &p.de.r8.low); }
+int LD_B_H() { return LD_reg(&p.bc.r8.high, &p.hl.r8.high); }
+int LD_B_L() { return LD_reg(&p.bc.r8.high, &p.hl.r8.low); }
+int LD_B_A() { return LD_reg(&p.bc.r8.high, &p.af.r8.high); }
 
-int LD_C_B(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->bc.r8.high); }
-int LD_C_C(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->bc.r8.low); }
-int LD_C_D(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.high); }
-int LD_C_E(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->de.r8.low); }
-int LD_C_H(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.high); }
-int LD_C_L(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->hl.r8.low); }
-int LD_C_A(proc* p) { return LD_reg(p, &p->bc.r8.low, &p->af.r8.high); }
+int LD_C_B() { return LD_reg(&p.bc.r8.low, &p.bc.r8.high); }
+int LD_C_C() { return LD_reg(&p.bc.r8.low, &p.bc.r8.low); }
+int LD_C_D() { return LD_reg(&p.bc.r8.low, &p.de.r8.high); }
+int LD_C_E() { return LD_reg(&p.bc.r8.low, &p.de.r8.low); }
+int LD_C_H() { return LD_reg(&p.bc.r8.low, &p.hl.r8.high); }
+int LD_C_L() { return LD_reg(&p.bc.r8.low, &p.hl.r8.low); }
+int LD_C_A() { return LD_reg(&p.bc.r8.low, &p.af.r8.high); }
 
-int LD_D_B(proc* p) { return LD_reg(p, &p->de.r8.high, &p->bc.r8.high); }
-int LD_D_C(proc* p) { return LD_reg(p, &p->de.r8.high, &p->bc.r8.low); }
-int LD_D_D(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.high); }
-int LD_D_E(proc* p) { return LD_reg(p, &p->de.r8.high, &p->de.r8.low); }
-int LD_D_H(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.high); }
-int LD_D_L(proc* p) { return LD_reg(p, &p->de.r8.high, &p->hl.r8.low); }
-int LD_D_A(proc* p) { return LD_reg(p, &p->de.r8.high, &p->af.r8.high); }
+int LD_D_B() { return LD_reg(&p.de.r8.high, &p.bc.r8.high); }
+int LD_D_C() { return LD_reg(&p.de.r8.high, &p.bc.r8.low); }
+int LD_D_D() { return LD_reg(&p.de.r8.high, &p.de.r8.high); }
+int LD_D_E() { return LD_reg(&p.de.r8.high, &p.de.r8.low); }
+int LD_D_H() { return LD_reg(&p.de.r8.high, &p.hl.r8.high); }
+int LD_D_L() { return LD_reg(&p.de.r8.high, &p.hl.r8.low); }
+int LD_D_A() { return LD_reg(&p.de.r8.high, &p.af.r8.high); }
 
-int LD_E_B(proc* p) { return LD_reg(p, &p->de.r8.low, &p->bc.r8.high); }
-int LD_E_C(proc* p) { return LD_reg(p, &p->de.r8.low, &p->bc.r8.low); }
-int LD_E_D(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.high); }
-int LD_E_E(proc* p) { return LD_reg(p, &p->de.r8.low, &p->de.r8.low); }
-int LD_E_H(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.high); }
-int LD_E_L(proc* p) { return LD_reg(p, &p->de.r8.low, &p->hl.r8.low); }
-int LD_E_A(proc* p) { return LD_reg(p, &p->de.r8.low, &p->af.r8.high); }
+int LD_E_B() { return LD_reg(&p.de.r8.low, &p.bc.r8.high); }
+int LD_E_C() { return LD_reg(&p.de.r8.low, &p.bc.r8.low); }
+int LD_E_D() { return LD_reg(&p.de.r8.low, &p.de.r8.high); }
+int LD_E_E() { return LD_reg(&p.de.r8.low, &p.de.r8.low); }
+int LD_E_H() { return LD_reg(&p.de.r8.low, &p.hl.r8.high); }
+int LD_E_L() { return LD_reg(&p.de.r8.low, &p.hl.r8.low); }
+int LD_E_A() { return LD_reg(&p.de.r8.low, &p.af.r8.high); }
 
-int LD_H_B(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->bc.r8.high); }
-int LD_H_C(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->bc.r8.low); }
-int LD_H_D(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.high); }
-int LD_H_E(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->de.r8.low); }
-int LD_H_H(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.high); }
-int LD_H_L(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->hl.r8.low); }
-int LD_H_A(proc* p) { return LD_reg(p, &p->hl.r8.high, &p->af.r8.high); }
+int LD_H_B() { return LD_reg(&p.hl.r8.high, &p.bc.r8.high); }
+int LD_H_C() { return LD_reg(&p.hl.r8.high, &p.bc.r8.low); }
+int LD_H_D() { return LD_reg(&p.hl.r8.high, &p.de.r8.high); }
+int LD_H_E() { return LD_reg(&p.hl.r8.high, &p.de.r8.low); }
+int LD_H_H() { return LD_reg(&p.hl.r8.high, &p.hl.r8.high); }
+int LD_H_L() { return LD_reg(&p.hl.r8.high, &p.hl.r8.low); }
+int LD_H_A() { return LD_reg(&p.hl.r8.high, &p.af.r8.high); }
 
-int LD_L_B(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->bc.r8.high); }
-int LD_L_C(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->bc.r8.low); }
-int LD_L_D(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.high); }
-int LD_L_E(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->de.r8.low); }
-int LD_L_H(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.high); }
-int LD_L_L(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->hl.r8.low); }
-int LD_L_A(proc* p) { return LD_reg(p, &p->hl.r8.low, &p->af.r8.high); }
+int LD_L_B() { return LD_reg(&p.hl.r8.low, &p.bc.r8.high); }
+int LD_L_C() { return LD_reg(&p.hl.r8.low, &p.bc.r8.low); }
+int LD_L_D() { return LD_reg(&p.hl.r8.low, &p.de.r8.high); }
+int LD_L_E() { return LD_reg(&p.hl.r8.low, &p.de.r8.low); }
+int LD_L_H() { return LD_reg(&p.hl.r8.low, &p.hl.r8.high); }
+int LD_L_L() { return LD_reg(&p.hl.r8.low, &p.hl.r8.low); }
+int LD_L_A() { return LD_reg(&p.hl.r8.low, &p.af.r8.high); }
 
-int LD_A_B(proc* p) { return LD_reg(p, &p->af.r8.high, &p->bc.r8.high); }
-int LD_A_C(proc* p) { return LD_reg(p, &p->af.r8.high, &p->bc.r8.low); }
-int LD_A_D(proc* p) { return LD_reg(p, &p->af.r8.high, &p->de.r8.high); }
-int LD_A_E(proc* p) { return LD_reg(p, &p->af.r8.high, &p->de.r8.low); }
-int LD_A_H(proc* p) { return LD_reg(p, &p->af.r8.high, &p->hl.r8.high); }
-int LD_A_L(proc* p) { return LD_reg(p, &p->af.r8.high, &p->hl.r8.low); }
-int LD_A_A(proc* p) { return LD_reg(p, &p->af.r8.high, &p->af.r8.high); }
+int LD_A_B() { return LD_reg(&p.af.r8.high, &p.bc.r8.high); }
+int LD_A_C() { return LD_reg(&p.af.r8.high, &p.bc.r8.low); }
+int LD_A_D() { return LD_reg(&p.af.r8.high, &p.de.r8.high); }
+int LD_A_E() { return LD_reg(&p.af.r8.high, &p.de.r8.low); }
+int LD_A_H() { return LD_reg(&p.af.r8.high, &p.hl.r8.high); }
+int LD_A_L() { return LD_reg(&p.af.r8.high, &p.hl.r8.low); }
+int LD_A_A() { return LD_reg(&p.af.r8.high, &p.af.r8.high); }
 
-int NOP(proc* p) { p->pc++; return 4; }
+int NOP() { p.pc++; return 4; }
 
-int JP(proc* p)
+int JP()
 {
-  uint16_t adr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
-  p->pc = adr;
+  uint16_t adr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
+  p.pc = adr;
   return 16;
 }
 
-int COND_JP(proc* p, uint8_t cond)
+int COND_JP(uint8_t cond)
 {
   if (cond)
   {
-    uint16_t adr = generate_address(read_from_mem(p->pc+1), read_from_mem(p->pc+2));
-    p->pc = adr;
+    uint16_t adr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
+    p.pc = adr;
     return 16;
   }
 
-  p->pc += 3;
+  p.pc += 3;
   return 12;
 }
 
-int JP_NZ(proc* p) { return COND_JP(p, !test_flag(p, ZERO)); }
-int JP_Z(proc* p) { return COND_JP(p, test_flag(p, ZERO)); }
-int JP_NC(proc* p) { return COND_JP(p, !test_flag(p, CARRY)); }
-int JP_C(proc* p) { return COND_JP(p, test_flag(p, CARRY)); }
+int JP_NZ() { return COND_JP(!test_flag(&p, ZERO)); }
+int JP_Z() { return COND_JP(test_flag(&p, ZERO)); }
+int JP_NC() { return COND_JP(!test_flag(&p, CARRY)); }
+int JP_C() { return COND_JP(test_flag(&p, CARRY)); }
 
-int JP_HL(proc* p)
+int JP_HL()
 {
-  uint16_t adr = generate_address(p->hl.r8.low, p->hl.r8.high);
-  p->pc = read_from_mem(adr);
+  uint16_t adr = generate_address(p.hl.r8.low, p.hl.r8.high);
+  p.pc = read_from_mem(adr);
   return 4;
 }
 
-int JR(proc* p)
+int JR()
 {
-  uint16_t adr = p->pc + 1 + (int8_t) read_from_mem(p->pc+1);
-  p->pc = adr;
+  uint16_t adr = p.pc + 1 + (int8_t) read_from_mem(p.pc+1);
+  p.pc = adr;
   return 12;
 }
 
-int COND_JR(proc* p, uint8_t cond)
+int COND_JR(uint8_t cond)
 {
   if (cond)
   {
-    uint16_t adr = p->pc + 2 + (int8_t) read_from_mem(p->pc+1);
-    printf("Adress: 0x%x\n", read_from_mem(p->pc+1));
-    p->pc = adr;
+    uint16_t adr = p.pc + 2 + (int8_t) read_from_mem(p.pc+1);
+    p.pc = adr;
     return 12;
   }
 
-  p->pc += 2;
+  p.pc += 2;
   return 8;
 }
 
-int JR_NZ(proc* p) { return COND_JR(p, !test_flag(p, ZERO)); }
-int JR_Z(proc* p) { return COND_JR(p, test_flag(p, ZERO)); }
-int JR_NC(proc* p) { return COND_JR(p, !test_flag(p, CARRY)); }
-int JR_C(proc* p) { return COND_JR(p, test_flag(p, CARRY)); }
+int JR_NZ() { return COND_JR(!test_flag(&p, ZERO)); }
+int JR_Z() { return COND_JR(test_flag(&p, ZERO)); }
+int JR_NC() { return COND_JR(!test_flag(&p, CARRY)); }
+int JR_C() { return COND_JR(test_flag(&p, CARRY)); }
 
-int XOR(proc* p, uint8_t reg)
+int XOR(uint8_t reg)
 {
-  p->af.r8.high ^= reg ;
+  p.af.r8.high ^= reg ;
 
   // set flags
-  clear_flags(p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
-  set_flag(p, ZERO, !p->af.r8.high);
+  clear_flags(&p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
+  set_flag(&p, ZERO, !p.af.r8.high);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int XOR_B(proc* p) { return XOR(p, p->bc.r8.high); }
-int XOR_C(proc* p) { return XOR(p, p->bc.r8.low); }
-int XOR_D(proc* p) { return XOR(p, p->de.r8.high); }
-int XOR_E(proc* p) { return XOR(p, p->de.r8.low); }
-int XOR_H(proc* p) { return XOR(p, p->hl.r8.high); }
-int XOR_L(proc* p) { return XOR(p, p->hl.r8.low); }
-int XOR_HL(proc* p) { return XOR(p, read_from_mem(p->hl.r16)); }
-int XOR_A(proc* p) { return XOR(p, p->af.r8.high); }
-int XOR_A_d8(proc* p)
+int XOR_B() { return XOR(p.bc.r8.high); }
+int XOR_C() { return XOR(p.bc.r8.low); }
+int XOR_D() { return XOR(p.de.r8.high); }
+int XOR_E() { return XOR(p.de.r8.low); }
+int XOR_H() { return XOR(p.hl.r8.high); }
+int XOR_L() { return XOR(p.hl.r8.low); }
+int XOR_HL() { return XOR(read_from_mem(p.hl.r16)); }
+int XOR_A() { return XOR(p.af.r8.high); }
+int XOR_A_d8()
 {
-  XOR(p, read_from_mem(p->pc+1));
+  XOR(read_from_mem(p.pc+1));
 
-  p->pc++; // Already incremented once in call to XOR
+  p.pc++; // Already incremented once in call to XOR
   return 8;
 }
 
-int POP(proc* p, uint16_t* r)
+int POP(uint16_t* r)
 {
-  uint16_t val = generate_address(read_from_mem(p->sp), read_from_mem(p->sp+1));
+  uint16_t val = generate_address(read_from_mem(p.sp), read_from_mem(p.sp+1));
   *r = val;
 
-  p->sp += 2;
-  p->pc += 1;
+  p.sp += 2;
+  p.pc += 1;
   return 12;
 }
 
-int POP_BC(proc* p) { return POP(p, &p->bc.r16); }
-int POP_DE(proc* p) { return POP(p, &p->de.r16); }
-int POP_HL(proc* p) { return POP(p, &p->hl.r16); }
-int POP_AF(proc*p)  { return POP(p, &p->af.r16); }
+int POP_BC() { return POP(&p.bc.r16); }
+int POP_DE() { return POP(&p.de.r16); }
+int POP_HL() { return POP(&p.hl.r16); }
+int POP_AF()  { return POP(&p.af.r16); }
 
-int PUSH(proc* p, reg* r)
+int PUSH(reg* r)
 {
-  write_to_mem(p->sp-1, r->r8.high);
-  write_to_mem(p->sp-2, r->r8.low);
+  write_to_mem(p.sp-1, r->r8.high);
+  write_to_mem(p.sp-2, r->r8.low);
 
-  p->sp -= 2;
-  p->pc += 1;
+  p.sp -= 2;
+  p.pc += 1;
   return 16;
 }
 
-int PUSH_BC(proc* p) { return PUSH(p, &p->bc); }
-int PUSH_DE(proc* p) { return PUSH(p, &p->de); }
-int PUSH_HL(proc* p) { return PUSH(p, &p->hl); }
-int PUSH_AF(proc* p) { return PUSH(p, &p->af); }
+int PUSH_BC() { return PUSH(&p.bc); }
+int PUSH_DE() { return PUSH(&p.de); }
+int PUSH_HL() { return PUSH(&p.hl); }
+int PUSH_AF() { return PUSH(&p.af); }
 
-int RST(proc* p, uint8_t addr)
+int RST(uint8_t addr)
 {
-  write_to_mem(p->sp+1, p->pc);
-  p->pc = addr;
+  write_to_mem(p.sp+1, p.pc);
+  p.pc = addr;
 
-  p->sp++;
+  p.sp++;
   return 16;
 }
 
-int RST_00(proc* p) { return RST(p, 0x00); }
-int RST_10(proc* p) { return RST(p, 0x10); }
-int RST_20(proc* p) { return RST(p, 0x20); }
-int RST_30(proc* p) { return RST(p, 0x30); }
+int RST_00() { return RST(0x00); }
+int RST_10() { return RST(0x10); }
+int RST_20() { return RST(0x20); }
+int RST_30() { return RST(0x30); }
 
-int RST_08(proc* p) { return RST(p, 0x08); }
-int RST_18(proc* p) { return RST(p, 0x18); }
-int RST_28(proc* p) { return RST(p, 0x28); }
-int RST_38(proc* p) { return RST(p, 0x38); }
+int RST_08() { return RST(0x08); }
+int RST_18() { return RST(0x18); }
+int RST_28() { return RST(0x28); }
+int RST_38() { return RST(0x38); }
 
-int ADD_16bit(proc* p, uint16_t* r1, uint16_t r2)
+int ADD_16bit(uint16_t* r1, uint16_t r2)
 {
-  clear_flags(p, ZERO);
+  clear_flags(&p, ZERO);
   int half_sum = (*r1 & 0xFF) + (r2 & 0xFF);
-  set_flag(p, HALF_CARRY, half_sum >= 0x100);
+  set_flag(&p, HALF_CARRY, half_sum >= 0x100);
   int sum = *r1 + r2;
-  set_flag(p, CARRY, sum >= 0x10000);
+  set_flag(&p, CARRY, sum >= 0x10000);
 
   *r1 = *r1 + r2;
 
-  p->pc++;
+  p.pc++;
   return 8;
 }
 
-int ADD_HL_BC(proc* p) { return ADD_16bit(p, &p->hl.r16, p->bc.r16); }
-int ADD_HL_DE(proc* p) { return ADD_16bit(p, &p->hl.r16, p->de.r16); }
-int ADD_HL_HL(proc* p) { return ADD_16bit(p, &p->hl.r16, p->hl.r16); }
-int ADD_HL_SP(proc* p) { return ADD_16bit(p, &p->hl.r16, p->sp); }
-int ADD_SP_r8(proc* p)
+int ADD_HL_BC() { return ADD_16bit(&p.hl.r16, p.bc.r16); }
+int ADD_HL_DE() { return ADD_16bit(&p.hl.r16, p.de.r16); }
+int ADD_HL_HL() { return ADD_16bit(&p.hl.r16, p.hl.r16); }
+int ADD_HL_SP() { return ADD_16bit(&p.hl.r16, p.sp); }
+int ADD_SP_r8()
 {
-  ADD_16bit(p, &p->sp, read_from_mem(p->pc+1));
-  clear_flags(p, ZERO);
+  ADD_16bit(&p.sp, read_from_mem(p.pc+1));
+  clear_flags(&p, ZERO);
 
-  p->pc++; // Already incremented once by call to ADD_16bit
+  p.pc++; // Already incremented once by call to ADD_16bit
   return 16;
 }
 
-int ADD(proc* p, uint8_t* r1, uint8_t r2, int carry)
+int ADD(uint8_t* r1, uint8_t r2, int carry)
 {
 
   uint8_t res = *r1 + r2 + carry;
   int carrybits = *r1 ^ r2 ^ res;
 
-  clear_flags(p, SUBTRACT);
-  set_flag(p, ZERO, !res);
-  set_flag(p, HALF_CARRY, carrybits & 0x10 == 1);
-  set_flag(p, CARRY, carrybits & 0x100 == 1);
+  clear_flags(&p, SUBTRACT);
+  set_flag(&p, ZERO, !res);
+  set_flag(&p, HALF_CARRY, carrybits & 0x10 == 1);
+  set_flag(&p, CARRY, carrybits & 0x100 == 1);
 
   *r1 = res;
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int ADD_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, 0); }
-int ADD_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, 0); }
-int ADD_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, 0); }
-int ADD_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, 0); }
-int ADD_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, 0); }
-int ADD_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, 0); }
-int ADD_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, read_from_mem(p->hl.r16), 0); }
-int ADD_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, 0); }
-int ADD_A_d8(proc* p)
+int ADD_A_B() { return ADD(&p.af.r8.high, p.bc.r8.high, 0); }
+int ADD_A_C() { return ADD(&p.af.r8.high, p.bc.r8.low, 0); }
+int ADD_A_D() { return ADD(&p.af.r8.high, p.de.r8.high, 0); }
+int ADD_A_E() { return ADD(&p.af.r8.high, p.de.r8.low, 0); }
+int ADD_A_H() { return ADD(&p.af.r8.high, p.hl.r8.high, 0); }
+int ADD_A_L() { return ADD(&p.af.r8.high, p.hl.r8.low, 0); }
+int ADD_A_mHL() { return ADD(&p.af.r8.high, read_from_mem(p.hl.r16), 0); }
+int ADD_A_A() { return ADD(&p.af.r8.high, p.af.r8.high, 0); }
+int ADD_A_d8()
 {
-  ADD(p, &p->af.r8.high, read_from_mem(p->pc+1), 0);
+  ADD(&p.af.r8.high, read_from_mem(p.pc+1), 0);
 
-  p->pc++; // Already incremented once in call to ADD
+  p.pc++; // Already incremented once in call to ADD
   return 8;
 }
 
-int ADC_A_B(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
-int ADC_A_C(proc* p) { return ADD(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
-int ADC_A_D(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); }
-int ADC_A_E(proc* p) { return ADD(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); }
-int ADC_A_H(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); }
-int ADC_A_L(proc* p) { return ADD(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
-int ADC_A_mHL(proc* p) { return ADD(p, &p->af.r8.high, read_from_mem(p->hl.r16), test_flag(p, CARRY)); }
-int ADC_A_A(proc* p) { return ADD(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
-int ADC_A_d8(proc* p)
+int ADC_A_B() { return ADD(&p.af.r8.high, p.bc.r8.high, test_flag(&p, CARRY)); }
+int ADC_A_C() { return ADD(&p.af.r8.high, p.bc.r8.low, test_flag(&p, CARRY)); }
+int ADC_A_D() { return ADD(&p.af.r8.high, p.de.r8.high, test_flag(&p, CARRY)); }
+int ADC_A_E() { return ADD(&p.af.r8.high, p.de.r8.low, test_flag(&p, CARRY)); }
+int ADC_A_H() { return ADD(&p.af.r8.high, p.hl.r8.high, test_flag(&p, CARRY)); }
+int ADC_A_L() { return ADD(&p.af.r8.high, p.hl.r8.low, test_flag(&p, CARRY)); }
+int ADC_A_mHL() { return ADD(&p.af.r8.high, read_from_mem(p.hl.r16), test_flag(&p, CARRY)); }
+int ADC_A_A() { return ADD(&p.af.r8.high, p.af.r8.high, test_flag(&p, CARRY)); }
+int ADC_A_d8()
 {
-  ADD(p, &p->af.r8.high, read_from_mem(p->pc+1), test_flag(p, CARRY));
+  ADD(&p.af.r8.high, read_from_mem(p.pc+1), test_flag(&p, CARRY));
 
-  p->pc++; // Already incremented once in call to ADD
+  p.pc++; // Already incremented once in call to ADD
   return 8;
 }
 
-int SUB(proc* p, uint8_t* r1, uint8_t r2, int carry)
+int SUB(uint8_t* r1, uint8_t r2, int carry)
 {
-  set_flag(p, SUBTRACT, 1);
-  set_flag(p, CARRY, r2 + carry > *r1);
-  set_flag(p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  );
+  set_flag(&p, SUBTRACT, 1);
+  set_flag(&p, CARRY, r2 + carry > *r1);
+  set_flag(&p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  );
 
   *r1 -= r2 + carry;
-  set_flag(p, ZERO, !(*r1));
+  set_flag(&p, ZERO, !(*r1));
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int SUB_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, 0); }
-int SUB_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, 0); }
-int SUB_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, 0); }
-int SUB_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, 0); }
-int SUB_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, 0); }
-int SUB_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, 0); }
-int SUB_mHL(proc* p) { return SUB(p, &p->af.r8.high, read_from_mem(p->hl.r16), 0); }
-int SUB_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, 0); }
-int SUB_A_d8(proc* p)
+int SUB_B() { return SUB(&p.af.r8.high, p.bc.r8.high, 0); }
+int SUB_C() { return SUB(&p.af.r8.high, p.bc.r8.low, 0); }
+int SUB_D() { return SUB(&p.af.r8.high, p.de.r8.high, 0); }
+int SUB_E() { return SUB(&p.af.r8.high, p.de.r8.low, 0); }
+int SUB_H() { return SUB(&p.af.r8.high, p.hl.r8.high, 0); }
+int SUB_L() { return SUB(&p.af.r8.high, p.hl.r8.low, 0); }
+int SUB_mHL() { return SUB(&p.af.r8.high, read_from_mem(p.hl.r16), 0); }
+int SUB_A() { return SUB(&p.af.r8.high, p.af.r8.high, 0); }
+int SUB_A_d8()
 {
-  SUB(p, &p->af.r8.high, read_from_mem(p->pc+1), 0);
+  SUB(&p.af.r8.high, read_from_mem(p.pc+1), 0);
 
-  p->pc++; // Already incremented once in call to SUB
+  p.pc++; // Already incremented once in call to SUB
   return 8;
 }
 
-int SBC_B(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.high, test_flag(p, CARRY)); }
-int SBC_C(proc* p) { return SUB(p, &p->af.r8.high, p->bc.r8.low, test_flag(p, CARRY)); }
-int SBC_D(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.high, test_flag(p, CARRY)); }
-int SBC_E(proc* p) { return SUB(p, &p->af.r8.high, p->de.r8.low, test_flag(p, CARRY)); }
-int SBC_H(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.high, test_flag(p, CARRY)); }
-int SBC_L(proc* p) { return SUB(p, &p->af.r8.high, p->hl.r8.low, test_flag(p, CARRY)); }
-int SBC_mHL(proc* p) { return SUB(p, &p->af.r8.high, read_from_mem(p->hl.r16), test_flag(p, CARRY)); }
-int SBC_A(proc* p) { return SUB(p, &p->af.r8.high, p->af.r8.high, test_flag(p, CARRY)); }
-int SBC_A_d8(proc* p)
+int SBC_B() { return SUB(&p.af.r8.high, p.bc.r8.high, test_flag(&p, CARRY)); }
+int SBC_C() { return SUB(&p.af.r8.high, p.bc.r8.low, test_flag(&p, CARRY)); }
+int SBC_D() { return SUB(&p.af.r8.high, p.de.r8.high, test_flag(&p, CARRY)); }
+int SBC_E() { return SUB(&p.af.r8.high, p.de.r8.low, test_flag(&p, CARRY)); }
+int SBC_H() { return SUB(&p.af.r8.high, p.hl.r8.high, test_flag(&p, CARRY)); }
+int SBC_L() { return SUB(&p.af.r8.high, p.hl.r8.low, test_flag(&p, CARRY)); }
+int SBC_mHL() { return SUB(&p.af.r8.high, read_from_mem(p.hl.r16), test_flag(&p, CARRY)); }
+int SBC_A() { return SUB(&p.af.r8.high, p.af.r8.high, test_flag(&p, CARRY)); }
+int SBC_A_d8()
 {
-  SUB(p, &p->af.r8.high, read_from_mem(p->pc+1), test_flag(p, CARRY));
+  SUB(&p.af.r8.high, read_from_mem(p.pc+1), test_flag(&p, CARRY));
 
-  p->pc++; // Already incremented once in call to SUB
+  p.pc++; // Already incremented once in call to SUB
   return 8;
 }
 
-int AND(proc* p, uint8_t r)
+int AND(uint8_t r)
 {
-  p->af.r8.high &= r;
-  set_flag(p, ZERO, !p->af.r8.high);
-  set_flag(p, HALF_CARRY, 1);
-  clear_flags(p, SUBTRACT | CARRY);
+  p.af.r8.high &= r;
+  set_flag(&p, ZERO, !p.af.r8.high);
+  set_flag(&p, HALF_CARRY, 1);
+  clear_flags(&p, SUBTRACT | CARRY);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int AND_B(proc* p) { return AND(p, p->bc.r8.high); }
-int AND_C(proc* p) { return AND(p, p->bc.r8.low); }
-int AND_D(proc* p) { return AND(p, p->de.r8.high); }
-int AND_E(proc* p) { return AND(p, p->de.r8.low); }
-int AND_H(proc* p) { return AND(p, p->hl.r8.high); }
-int AND_L(proc* p) { return AND(p, p->hl.r8.low); }
-int AND_mHL(proc* p) { return AND(p, read_from_mem(p->hl.r16)); }
-int AND_A(proc* p) { return AND(p, p->af.r8.high); }
-int AND_A_d8(proc* p)
+int AND_B() { return AND(p.bc.r8.high); }
+int AND_C() { return AND(p.bc.r8.low); }
+int AND_D() { return AND(p.de.r8.high); }
+int AND_E() { return AND(p.de.r8.low); }
+int AND_H() { return AND(p.hl.r8.high); }
+int AND_L() { return AND(p.hl.r8.low); }
+int AND_mHL() { return AND(read_from_mem(p.hl.r16)); }
+int AND_A() { return AND(p.af.r8.high); }
+int AND_A_d8()
 {
-  AND(p, read_from_mem(p->pc+1));
+  AND(read_from_mem(p.pc+1));
 
-  p->pc++; // Already incremented once in call to AND
+  p.pc++; // Already incremented once in call to AND
   return 8;
 }
 
-int OR(proc* p, uint8_t r)
+int OR(uint8_t r)
 {
-  p->af.r8.high |= r;
-  set_flag(p, ZERO, !p->af.r8.high);
-  clear_flags(p, SUBTRACT | HALF_CARRY | CARRY);
+  p.af.r8.high |= r;
+  set_flag(&p, ZERO, !p.af.r8.high);
+  clear_flags(&p, SUBTRACT | HALF_CARRY | CARRY);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int OR_B(proc* p) { return OR(p, p->bc.r8.high); }
-int OR_C(proc* p) { return OR(p, p->bc.r8.low); }
-int OR_D(proc* p) { return OR(p, p->de.r8.high); }
-int OR_E(proc* p) { return OR(p, p->de.r8.low); }
-int OR_H(proc* p) { return OR(p, p->hl.r8.high); }
-int OR_L(proc* p) { return OR(p, p->hl.r8.low); }
-int OR_mHL(proc* p) { return OR(p, read_from_mem(p->hl.r16)); }
-int OR_A(proc* p) { return OR(p, p->af.r8.high); }
-int OR_A_d8(proc* p)
+int OR_B() { return OR(p.bc.r8.high); }
+int OR_C() { return OR(p.bc.r8.low); }
+int OR_D() { return OR(p.de.r8.high); }
+int OR_E() { return OR(p.de.r8.low); }
+int OR_H() { return OR(p.hl.r8.high); }
+int OR_L() { return OR(p.hl.r8.low); }
+int OR_mHL() { return OR(read_from_mem(p.hl.r16)); }
+int OR_A() { return OR(p.af.r8.high); }
+int OR_A_d8()
 {
-  OR(p, read_from_mem(p->pc+1));
+  OR(read_from_mem(p.pc+1));
 
-  p->pc++; // Already incremented once in call to OR
+  p.pc++; // Already incremented once in call to OR
   return 8;
 }
 
-int LDH_a8_A(proc* p)
+int LDH_a8_A()
 {
-  uint16_t addr = 0xFF00 + read_from_mem(p->pc+1);
-  write_to_mem(addr, p->af.r8.high);
+  uint16_t addr = 0xFF00 + read_from_mem(p.pc+1);
+  write_to_mem(addr, p.af.r8.high);
 
-  p->pc += 2;
+  p.pc += 2;
   return 12;
 }
 
-int LDH_A_a8(proc* p)
+int LDH_A_a8()
 {
-  uint16_t addr = 0xFF00 + read_from_mem(p->pc+1);
-  p->af.r8.high = read_from_mem(addr);
+  uint16_t addr = 0xFF00 + read_from_mem(p.pc+1);
+  p.af.r8.high = read_from_mem(addr);
 
-  p->pc += 2;
+  p.pc += 2;
   return 12;
 }
 
-int LD_SP_HL(proc* p)
+int LD_SP_HL()
 {
-  p->sp = p->hl.r16;
+  p.sp = p.hl.r16;
 
-  p->pc += 1;
+  p.pc += 1;
   return 8;
 }
 
-int CP(proc* p, uint8_t r)
+int CP(uint8_t r)
 {
-  uint8_t a = p->af.r8.high;
+  uint8_t a = p.af.r8.high;
 
-  set_flag(p, SUBTRACT, 1);
-  set_flag(p, ZERO, a == r);
-  set_flag(p, HALF_CARRY, (a & 0xF) < (r & 0xF));
-  set_flag(p, CARRY, a < r);
+  set_flag(&p, SUBTRACT, 1);
+  set_flag(&p, ZERO, a == r);
+  set_flag(&p, HALF_CARRY, (a & 0xF) < (r & 0xF));
+  set_flag(&p, CARRY, a < r);
 }
 
-int CP_d8(proc* p)
+int CP_d8()
 {
-  CP(p, read_from_mem(p->pc+1));
-  p->pc += 2;
+  CP(read_from_mem(p.pc+1));
+  p.pc += 2;
   return 8;
 }
 
-int CP_reg(proc* p, uint8_t r)
+int CP_reg(uint8_t r)
 {
-  CP(p, r);
-  p->pc += 1;
+  CP(r);
+  p.pc += 1;
   return 4;
 }
 
-int CP_B(proc* p) { return CP_reg(p, p->bc.r8.high); }
-int CP_C(proc* p) { return CP_reg(p, p->bc.r8.low); }
-int CP_D(proc* p) { return CP_reg(p, p->de.r8.high); }
-int CP_E(proc* p) { return CP_reg(p, p->de.r8.low); }
-int CP_H(proc* p) { return CP_reg(p, p->hl.r8.high); }
-int CP_L(proc* p) { return CP_reg(p, p->hl.r8.low); }
-int CP_HL(proc* p) { return CP_reg(p, read_from_mem(p->hl.r16)); }
-int CP_A(proc* p) { return CP_reg(p, p->af.r8.high); }
+int CP_B() { return CP_reg(p.bc.r8.high); }
+int CP_C() { return CP_reg(p.bc.r8.low); }
+int CP_D() { return CP_reg(p.de.r8.high); }
+int CP_E() { return CP_reg(p.de.r8.low); }
+int CP_H() { return CP_reg(p.hl.r8.high); }
+int CP_L() { return CP_reg(p.hl.r8.low); }
+int CP_HL() { return CP_reg(read_from_mem(p.hl.r16)); }
+int CP_A() { return CP_reg(p.af.r8.high); }
 
-int DAA(proc* p)
+int DAA()
 {
-  uint8_t* acc = &p->af.r8.high;
+  uint8_t* acc = &p.af.r8.high;
 
   // After an addition, adjust if (half-)carry occurred or if result is out of bounds
-  if (!test_flag(p, SUBTRACT))
+  if (!test_flag(&p, SUBTRACT))
   {
-    if (test_flag(p, CARRY) || *acc > 0x99)
+    if (test_flag(&p, CARRY) || *acc > 0x99)
     {
       *acc += 0x60;
-      set_flag(p, CARRY, 1);
+      set_flag(&p, CARRY, 1);
     }
-    if (test_flag(p, HALF_CARRY) || (*acc & 0x0f) > 0x09)
+    if (test_flag(&p, HALF_CARRY) || (*acc & 0x0f) > 0x09)
       *acc += 0x6;
   }
   // After a subtraction, only adjust if (half-)carry occurred
   else
   {
-      if (test_flag(p, CARRY))
+      if (test_flag(&p, CARRY))
         *acc -= 0x60;
-      if (test_flag(p, HALF_CARRY))
+      if (test_flag(&p, HALF_CARRY))
         *acc -= 0x6;
   }
 
-  set_flag(p, ZERO, *acc == 0);
-  clear_flags(p, HALF_CARRY);
+  set_flag(&p, ZERO, *acc == 0);
+  clear_flags(&p, HALF_CARRY);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int CPL(proc* p)
+int CPL()
 {
-  ~p->af.r8.high;
+  ~p.af.r8.high;
 
-  set_flag(p, SUBTRACT, 1);
-  set_flag(p, HALF_CARRY, 1);
+  set_flag(&p, SUBTRACT, 1);
+  set_flag(&p, HALF_CARRY, 1);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int CCF(proc* p)
+int CCF()
 {
   // Complement carry flag
-  set_flag(p, CARRY, !test_flag(p, CARRY));
-  clear_flags(p, SUBTRACT | HALF_CARRY);
+  set_flag(&p, CARRY, !test_flag(&p, CARRY));
+  clear_flags(&p, SUBTRACT | HALF_CARRY);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
-int SCF(proc* p)
+int SCF()
 {
-  set_flag(p, CARRY, 1);
-  clear_flags(p, SUBTRACT | HALF_CARRY);
+  set_flag(&p, CARRY, 1);
+  clear_flags(&p, SUBTRACT | HALF_CARRY);
 
-  p->pc++;
+  p.pc++;
   return 4;
 }
 
@@ -1855,14 +1887,14 @@ op operations[NUM_OPS] = {
   RST_38,           // 0xff
 };
 
-int PREFIX(proc* p)
+int PREFIX()
 {
-  p->pc++;
-  return prefix_operations[read_from_mem(p->pc)](p) + 4;
+  p.pc++;
+  return prefix_operations[read_from_mem(p.pc)](p) + 4;
 }
 
-int run_operation(proc* p)
+int run_operation()
 {
-  return operations[read_from_mem(p->pc)](p);
+  return operations[read_from_mem(p.pc)](p);
 }
 
