@@ -1407,12 +1407,6 @@ int SCF(proc* p)
   return 4;
 }
 
-int PREFIX(proc* p)
-{
-  p->pc++;
-  return prefix_operations[p->mem[p->pc]](p) + 4;
-}
-
 op prefix_operations[NUM_OPS] = {
   RLC_B,            // 0x00
   RLC_C,            // 0x01
@@ -1930,6 +1924,12 @@ op operations[NUM_OPS] = {
   CP_d8,            // 0xfe
   RST_38,           // 0xff
 };
+
+int PREFIX(proc* p)
+{
+  p->pc++;
+  return prefix_operations[p->mem[p->pc]](p) + 4;
+}
 
 int run_operation(proc* p, uint8_t op)
 {

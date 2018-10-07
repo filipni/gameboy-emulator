@@ -8,6 +8,8 @@
 #define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
 #define ROM_SIZE 32768
 
+#define MEMORY_SIZE 0x10000
+
 void print_debug_info(proc* p)
 {
   printf("FLAGS\n");
@@ -95,7 +97,7 @@ int main(int argc, char* argv[])
     }
     */
 
-    int res = run_operation(&p);
+    int res = run_operation(&p, memory[p.pc]);
 
     if (res < 0)
     {

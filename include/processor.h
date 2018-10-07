@@ -14,7 +14,7 @@ typedef struct {
 } flags;
 
 typedef union {
-  struct 
+  struct
   {
     // little endian
     uint8_t low;
@@ -39,7 +39,8 @@ typedef struct {
 
 typedef int (*op) (proc*);
 
-int run_operation(proc*, uint8_t); 
+int run_operation(proc*, uint8_t);
+int PREFIX(proc*);
 
 #endif
 
