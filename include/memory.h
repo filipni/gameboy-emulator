@@ -19,9 +19,13 @@
 
 #define MEMORY_SIZE         0x10000
 
-char memory[MEMORY_SIZE];
+uint8_t memory[MEMORY_SIZE];
+
+void init_memory();
+void load_rom();
 
 uint8_t read_from_mem(uint16_t addr);
 void write_to_mem(uint16_t addr, uint8_t data);
+uint8_t* get_mem_ref(uint16_t addr);
 
 #endif

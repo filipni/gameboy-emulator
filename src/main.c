@@ -3,6 +3,7 @@
 #include "constants.h"
 #include "processor.h"
 #include "utils.h"
+#include "memory.h"
 
 #define ROM_FILE "roms/tetris.gb"
 #define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
@@ -40,64 +41,24 @@ void init_proc(proc* p)
   p->sp = 0xFFFE;
   p->pc = 0x0100;
 
-  p->mem[0xFF05] = 0x00;
-  p->mem[0xFF06] = 0x00;
-  p->mem[0xFF07] = 0x00;
-  p->mem[0xFF10] = 0x80;
-  p->mem[0xFF11] = 0xBF;
-  p->mem[0xFF12] = 0xF3;
-  p->mem[0xFF14] = 0xBF;
-  p->mem[0xFF16] = 0x3F;
-  p->mem[0xFF17] = 0x00;
-  p->mem[0xFF19] = 0xBF;
-  p->mem[0xFF1A] = 0x7F;
-  p->mem[0xFF1B] = 0xFF;
-  p->mem[0xFF1C] = 0x9F;
-  p->mem[0xFF1E] = 0xBF;
-  p->mem[0xFF20] = 0xFF;
-  p->mem[0xFF21] = 0x00;
-  p->mem[0xFF22] = 0x00;
-  p->mem[0xFF23] = 0xBF;
-  p->mem[0xFF24] = 0x77;
-  p->mem[0xFF25] = 0xF3;
-  p->mem[0xFF26] = 0xF1;
-  p->mem[0xFF40] = 0x91;
-  p->mem[0xFF42] = 0x00;
-  p->mem[0xFF43] = 0x00;
-  p->mem[0xFF45] = 0x00;
-  p->mem[0xFF47] = 0xFC;
-  p->mem[0xFF48] = 0xFF;
-  p->mem[0xFF49] = 0xFF;
-  p->mem[0xFF4A] = 0x00;
-  p->mem[0xFF4B] = 0x00;
-  p->mem[0xFFFF] = 0x00;
 }
 
 int main(int argc, char* argv[])
 {
-  char memory[MEMORY_SIZE] = {0};
+  load_rom(ROM_FILE, ROM_SIZE);
 
-  FILE* fp;
-  fp = fopen(ROM_FILE, "rb");
-  fread(memory, ROM_SIZE, 1, fp);
-  fclose(fp);
-
-  proc p = {0};
-  p.mem = memory;
+  proc p;
   init_proc(&p);
+  init_memory();
 
   // main loop
   while (1)
   {
-    /*
-    if (p.pc >= ...)
-    {
        print_debug_info(&p);
+       printf("Current op: 0x%x\n", memory[p.pc]);
        getchar();
-    }
-    */
 
-    int res = run_operation(&p, memory[p.pc]);
+    int res = run_operation(&p);
 
     if (res < 0)
     {

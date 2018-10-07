@@ -39,7 +39,7 @@ typedef struct {
 
 typedef int (*op) (proc*);
 
-int run_operation(proc*, uint8_t);
+int run_operation(proc*);
 int PREFIX(proc*);
 
 #endif
