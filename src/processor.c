@@ -12,7 +12,6 @@ void init_proc()
   p.hl.r16 = 0x014D;
   p.sp = 0xFFFE;
   p.pc = 0x0100;
-
 }
 
 void print_debug_info()
@@ -52,10 +51,10 @@ int RET_INT(uint8_t enable_interrupts)
 
 int CALL()
 {
-  uint16_t next_addr = p.pc + 1;
+  uint16_t next_addr = p.pc + 3;
   // Push address to stack in little-endian order
-  write_to_mem(p.sp-1, next_addr & 0xF0); // High byte
-  write_to_mem(p.sp-2, next_addr & 0x0F); // Low byte
+  write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8); // High byte
+  write_to_mem(p.sp-2, next_addr & 0xFF); // Low byte
   p.sp -= 2;
 
   uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
@@ -68,10 +67,10 @@ int COND_CALL(uint8_t cond)
 {
   if (cond)
   {
-    uint16_t next_addr = p.pc + 1;
+    uint16_t next_addr = p.pc + 3;
     // Push address to stack in little-endian order
-    write_to_mem(p.sp-1, next_addr & 0xF0); // High byte
-    write_to_mem(p.sp-2, next_addr & 0x0F); // Low byte
+    write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8); // High byte
+    write_to_mem(p.sp-2, next_addr & 0xFF); // Low byte
     p.sp -= 2;
 
     uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
@@ -193,7 +192,7 @@ int RL_A() { return RL(&p.af.r8.high); }
 
 int RR(uint8_t* r)
 {
-  uint8_t lsb = *r & 0x01;
+  uint8_t lsb = (*r) & 0x01;
   uint8_t old_carry = test_flag(&p, CARRY);
   set_flag(&p, CARRY, lsb);
   *r >>= 1;
@@ -220,30 +219,34 @@ int RR_A() { return RR(&p.af.r8.high); }
 
 int RLCA()
 {
-  int res = RLC(&p.af.r8.high);
+  RLC(&p.af.r8.high);
   set_flag(&p, ZERO, 0);
-  return res;
+  p.pc--; // RLCA is a 1 byte instruction, but RLC increments pc by 2
+  return 4;
 }
 
 int RLA()
 {
-  int res = RL(&p.af.r8.high);
+  RL(&p.af.r8.high);
   set_flag(&p, ZERO, 0);
-  return res;
+  p.pc--; // RLA is a 1 byte instruction, but RL increments pc by 2
+  return 4;
 }
 
 int RRCA()
 {
-  int res = RRC(&p.af.r8.high);
+  RRC(&p.af.r8.high);
   set_flag(&p, ZERO, 0);
-  return res;
+  p.pc--; // RRCA is a 1 byte instruction, but RRC increments pc by 2
+  return 4;
 }
 
 int RRA()
 {
-  int res = RR(&p.af.r8.high);
+  RR(&p.af.r8.high);
   set_flag(&p, ZERO, 0);
-  return res;
+  p.pc--; // RRA is a 1 byte instruction, but RR increments pc by 2
+  return 4;
 }
 
 int SLA(uint8_t* r)
@@ -744,7 +747,7 @@ int LD_a16_A()
 
 int INC_r16(uint16_t* r)
 {
-  *r++;
+  (*r)++;
 
   p.pc++;
   return 8;
@@ -757,7 +760,7 @@ int INC_SP() { return INC_r16(&p.sp); }
 
 int DEC(uint16_t* r)
 {
-  *r--;
+  (*r)--;
 
   p.pc++;
   return 8;
@@ -855,13 +858,13 @@ int LD_C_mHL() { return LD_reg_mem(&p.bc.r8.low, get_mem_ref(p.hl.r16)); }
 int LD_E_mHL() { return LD_reg_mem(&p.de.r8.low, get_mem_ref(p.hl.r16)); }
 int LD_L_mHL() { return LD_reg_mem(&p.hl.r8.low, get_mem_ref(p.hl.r16)); }
 int LD_A_mHL() { return LD_reg_mem(&p.af.r8.low, get_mem_ref(p.hl.r16)); }
-int LD_mHL_B() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.bc.r8.high); }
-int LD_mHL_C() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.bc.r8.low); }
-int LD_mHL_D() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.de.r8.high); }
-int LD_mHL_E() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.de.r8.low); }
-int LD_mHL_H() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.hl.r8.high); }
-int LD_mHL_L() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.hl.r8.low); }
-int LD_mHL_A() { return LD_reg_mem(get_mem_ref(p.de.r16), &p.af.r8.high); }
+int LD_mHL_B() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.bc.r8.high); }
+int LD_mHL_C() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.bc.r8.low); }
+int LD_mHL_D() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.de.r8.high); }
+int LD_mHL_E() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.de.r8.low); }
+int LD_mHL_H() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.hl.r8.high); }
+int LD_mHL_L() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.hl.r8.low); }
+int LD_mHL_A() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.af.r8.high); }
 
 int LD_reg(uint8_t* r1, uint8_t* r2)
 {
@@ -968,14 +971,13 @@ int JP_C() { return COND_JP(test_flag(&p, CARRY)); }
 
 int JP_HL()
 {
-  uint16_t adr = generate_address(p.hl.r8.low, p.hl.r8.high);
-  p.pc = read_from_mem(adr);
+  p.pc = p.hl.r16; 
   return 4;
 }
 
 int JR()
 {
-  uint16_t adr = p.pc + 1 + (int8_t) read_from_mem(p.pc+1);
+  uint16_t adr = p.pc + 2 + (int8_t) read_from_mem(p.pc+1);
   p.pc = adr;
   return 12;
 }
@@ -1889,8 +1891,7 @@ op operations[NUM_OPS] = {
 
 int PREFIX()
 {
-  p.pc++;
-  return prefix_operations[read_from_mem(p.pc)](p) + 4;
+  return prefix_operations[read_from_mem(p.pc+1)](p) + 4;
 }
 
 int run_operation()

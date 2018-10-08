@@ -51,6 +51,11 @@ uint8_t read_from_mem(uint16_t addr)
 
 void write_to_mem(uint16_t addr, uint8_t data)
 {
+  if (addr == 0xFF02 && data == 0x81)
+  {
+    printf("%c", read_from_mem(0xFF01));
+  }
+
   memory[addr] = data;
 }
 
