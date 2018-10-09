@@ -690,6 +690,9 @@ int LD_A_a16()
   uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
   p.af.r8.high = read_from_mem(addr);
 
+  if (p.pc == 0xC65B)
+    printf("Address val: 0x%x\n", read_from_mem(addr));
+
   p.pc += 3;
   return 16;
 }
@@ -833,7 +836,7 @@ int LD_H_mHL() { return LD_reg_mem(&p.hl.r8.high, get_mem_ref(p.hl.r16)); }
 int LD_C_mHL() { return LD_reg_mem(&p.bc.r8.low, get_mem_ref(p.hl.r16)); }
 int LD_E_mHL() { return LD_reg_mem(&p.de.r8.low, get_mem_ref(p.hl.r16)); }
 int LD_L_mHL() { return LD_reg_mem(&p.hl.r8.low, get_mem_ref(p.hl.r16)); }
-int LD_A_mHL() { return LD_reg_mem(&p.af.r8.low, get_mem_ref(p.hl.r16)); }
+int LD_A_mHL() { return LD_reg_mem(&p.af.r8.high, get_mem_ref(p.hl.r16)); }
 int LD_mHL_B() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.bc.r8.high); }
 int LD_mHL_C() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.bc.r8.low); }
 int LD_mHL_D() { return LD_reg_mem(get_mem_ref(p.hl.r16), &p.de.r8.high); }
@@ -856,7 +859,9 @@ int LD_a16_SP()
   uint8_t high_byte = read_from_mem(p.pc+2);
   uint16_t addr = generate_address(low_byte, high_byte);
 
-  write_to_mem(addr, p.sp);
+  // Need to make two writes since SP is 16 bits and memory is byte addressable
+  write_to_mem(addr, p.sp & 0x00FF);
+  write_to_mem(addr+1, (p.sp & 0xFF00) >> 8);
 
   p.pc += 3;
   return 20;
