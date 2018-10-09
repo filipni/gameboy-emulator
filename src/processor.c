@@ -44,7 +44,7 @@ int run_operation()
   if (op_code == 0xcb)
   { 
     op_code = read_from_mem(p.pc+1);
-    return prefix_operations[op_code](p) + 4;
+    return prefix_operations[op_code](p);
   }
   else
     return operations[op_code](p);
