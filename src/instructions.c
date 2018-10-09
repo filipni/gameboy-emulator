@@ -622,7 +622,7 @@ int INC_A() { return INC_r8(&p.af.r8.high); }
 
 int DEC_r8(uint8_t* r)
 {
-  set_flag(&p, HALF_CARRY, *r < 1);
+  set_flag(&p, HALF_CARRY, (*r & 0x0F) < 1);
 
   (*r)--;
 
@@ -971,10 +971,10 @@ int JR_C() { return COND_JR(test_flag(&p, CARRY)); }
 
 int XOR(uint8_t reg)
 {
-  p.af.r8.high ^= reg ;
+  p.af.r8.high ^= reg;
 
   // set flags
-  clear_flags(&p, ZERO | SUBTRACT | HALF_CARRY | CARRY);
+  clear_flags(&p, SUBTRACT | HALF_CARRY | CARRY);
   set_flag(&p, ZERO, !p.af.r8.high);
 
   p.pc++;
