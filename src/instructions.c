@@ -8,7 +8,7 @@ int not_implemented() { return -1; }
 
 int STOP()
 {
-  printf("STOP is not implemented yet...\n");
+  // STOP is not implemented yet...
   p.pc++;
   return 4;
 }
@@ -689,9 +689,6 @@ int LD_A_a16()
 {
   uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
   p.af.r8.high = read_from_mem(addr);
-
-  if (p.pc == 0xC65B)
-    printf("Address val: 0x%x\n", read_from_mem(addr));
 
   p.pc += 3;
   return 16;
