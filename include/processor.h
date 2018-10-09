@@ -3,16 +3,6 @@
 
 #include <stdint.h>
 
-#define NUM_OPS 0x100
-
-typedef struct {
-  uint8_t not_used:4;
-  uint8_t z:1;
-  uint8_t n:1;
-  uint8_t h:1;
-  uint8_t c:1;
-} flags;
-
 typedef union {
   struct
   {
@@ -37,12 +27,9 @@ typedef struct {
 
 proc p;
 
-typedef int (*op) ();
-
 void init_proc();
 void print_debug_info();
 int run_operation();
-int PREFIX();
 
 #endif
 
