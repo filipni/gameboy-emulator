@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
   init_proc();
   init_memory();
 
-  load_rom(TEST_ROM, ROM_SIZE);
+  load_rom(ROM_FILE, ROM_SIZE);
 
   int breakpoint = 0x100;
   int step_enabled = 0;
