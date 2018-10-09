@@ -17,17 +17,25 @@ int main(int argc, char* argv[])
 
   load_rom(TEST_ROM, ROM_SIZE);
 
-  int break_point = 0;
+  int breakpoint = 0x100;
+  int step_enabled = 0;
 
   // Main loop
   while (1)
   {
     /*
-    if ((p.pc == 0x...) || break_point)
+    if ((p.pc == breakpoint) || step_enabled)
     {
-      break_point = 1;
       print_debug_info();
-      getchar();
+      char c = getchar();
+      if (c == 'n')
+      {
+        printf("Enter new breakpoint: ");
+        scanf("%x", &breakpoint);
+        step_enabled = 0;
+      }
+      else
+        step_enabled = 1;
     }
     */
 
