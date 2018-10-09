@@ -1048,7 +1048,7 @@ int RST_38() { return RST(0x38); }
 
 int ADD_16bit(uint16_t* r1, uint16_t r2)
 {
-  clear_flags(&p, ZERO);
+  clear_flags(&p, SUBTRACT);
   int half_sum = (*r1 & 0xFF) + (r2 & 0xFF);
   set_flag(&p, HALF_CARRY, half_sum >= 0x100);
   int sum = *r1 + r2;
@@ -1080,11 +1080,13 @@ int ADD(uint8_t* r1, uint8_t r2, int carry)
   int carrybits = *r1 ^ r2 ^ res;
 
   clear_flags(&p, SUBTRACT);
-  set_flag(&p, ZERO, !res);
-  set_flag(&p, HALF_CARRY, carrybits & 0x10 == 1);
-  set_flag(&p, CARRY, carrybits & 0x100 == 1);
+  int half_sum = (*r1 & 0x0F) + (r2 & 0x0F);
+  set_flag(&p, HALF_CARRY, half_sum >= 0x10);
+  int sum = *r1 + r2;
+  set_flag(&p, CARRY, sum >= 0x100);
 
-  *r1 = res;
+  *r1 = *r1 + r2;
+  set_flag(&p, ZERO, !(*r1));
 
   p.pc++;
   return 4;
