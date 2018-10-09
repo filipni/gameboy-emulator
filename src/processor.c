@@ -42,7 +42,7 @@ int run_operation()
   uint8_t op_code = read_from_mem(p.pc);
   // Check if op is from the prefix instruction set
   if (op_code == 0xcb)
-  { 
+  {
     op_code = read_from_mem(p.pc+1);
     return prefix_operations[op_code](p);
   }
