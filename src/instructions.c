@@ -6,6 +6,13 @@
 
 int not_implemented() { return -1; }
 
+int STOP()
+{
+  printf("STOP is not implemented yet...\n");
+  p.pc++;
+  return 4;
+}
+
 int RET_INT(uint8_t enable_interrupts)
 {
   uint16_t addr = generate_address(read_from_mem(p.sp), read_from_mem(p.sp+1));
@@ -1618,7 +1625,7 @@ op operations[NUM_OPS] = {
   DEC_C,            // 0x0d
   LD_C,             // 0x0e
   RRCA,             // 0x0f
-  not_implemented,  // 0x10
+  STOP,             // 0x10
   LD_DE,            // 0x11
   LD_mDE_A,         // 0x12
   INC_DE,           // 0x13

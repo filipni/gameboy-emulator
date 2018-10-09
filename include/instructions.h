@@ -8,7 +8,7 @@ typedef int (*op) ();
 int not_implemented();
 
 //
-//  Basic instruction set
+//  Extended instruction set
 //
 
 int  RLC_B();            // 0x00
@@ -269,7 +269,7 @@ int  set_bit_7_HL();     // 0xfe
 int  set_bit_7_A();      // 0xff
 
 //
-// Extended instruction set
+// Basic instruction set
 //
 
 int  NOP();              // 0x00
@@ -288,7 +288,7 @@ int  INC_C();            // 0x0c
 int  DEC_C();            // 0x0d
 int  LD_C();             // 0x0e
 int  RRCA();             // 0x0f
-//   does not exist      // 0x10
+int  STOP();             // 0x10
 int  LD_DE();            // 0x11
 int  LD_mDE_A();         // 0x12
 int  INC_DE();           // 0x13
