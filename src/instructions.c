@@ -1090,10 +1090,6 @@ int ADD_SP_r8()
 
 int ADD(uint8_t* r1, uint8_t r2, int carry)
 {
-
-  uint8_t res = *r1 + r2 + carry;
-  int carrybits = *r1 ^ r2 ^ res;
-
   clear_flags(&p, SUBTRACT);
   int half_sum = (*r1 & 0x0F) + (r2 & 0x0F);
   set_flag(&p, HALF_CARRY, half_sum >= 0x10);
