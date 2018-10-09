@@ -1017,7 +1017,13 @@ int POP(uint16_t* r)
 int POP_BC() { return POP(&p.bc.r16); }
 int POP_DE() { return POP(&p.de.r16); }
 int POP_HL() { return POP(&p.hl.r16); }
-int POP_AF()  { return POP(&p.af.r16); }
+int POP_AF()
+{
+  int ret = POP(&p.af.r16);
+  p.af.r8.low &= 0xF0; // Lower nibble of flag register should always be zero
+
+  return ret;
+}
 
 int PUSH(reg* r)
 {
