@@ -29,8 +29,8 @@ int CALL()
 {
   uint16_t next_addr = p.pc + 3;
   // Push address to stack in little-endian order
-  write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8); // High byte
-  write_to_mem(p.sp-2, next_addr & 0xFF); // Low byte
+  write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8);  // High byte
+  write_to_mem(p.sp-2, next_addr & 0xFF);           // Low byte
   p.sp -= 2;
 
   uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
@@ -45,8 +45,8 @@ int COND_CALL(uint8_t cond)
   {
     uint16_t next_addr = p.pc + 3;
     // Push address to stack in little-endian order
-    write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8); // High byte
-    write_to_mem(p.sp-2, next_addr & 0xFF); // Low byte
+    write_to_mem(p.sp-1, (next_addr & 0xFF00) >> 8);  // High byte
+    write_to_mem(p.sp-2, next_addr & 0xFF);           // Low byte
     p.sp -= 2;
 
     uint16_t addr = generate_address(read_from_mem(p.pc+1), read_from_mem(p.pc+2));
@@ -1020,10 +1020,12 @@ int PUSH_AF() { return PUSH(&p.af); }
 
 int RST(uint8_t addr)
 {
-  write_to_mem(p.sp+1, p.pc);
-  p.pc = addr;
+  // Push pc to stack in little-endian order
+  write_to_mem(p.sp-1, (p.pc & 0xFF00) >> 8);  // High byte
+  write_to_mem(p.sp-2, p.pc & 0xFF);           // Low byte
+  p.sp -= 2;
 
-  p.sp++;
+  p.pc = addr;
   return 16;
 }
 
