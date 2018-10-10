@@ -1020,7 +1020,8 @@ int PUSH_AF() { return PUSH(&p.af); }
 
 int RST(uint8_t addr)
 {
-  // Push pc to stack in little-endian order
+  // Push next address to stack in little-endian order
+  p.pc++;
   write_to_mem(p.sp-1, (p.pc & 0xFF00) >> 8);  // High byte
   write_to_mem(p.sp-2, p.pc & 0xFF);           // Low byte
   p.sp -= 2;
