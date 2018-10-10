@@ -1328,7 +1328,7 @@ int DAA()
 
 int CPL()
 {
-  ~p.af.r8.high;
+  p.af.r8.high = ~p.af.r8.high;
 
   set_flag(&p, SUBTRACT, 1);
   set_flag(&p, HALF_CARRY, 1);
