@@ -1064,8 +1064,8 @@ int RST_38() { return RST(0x38); }
 int ADD_16bit(uint16_t* r1, uint16_t r2)
 {
   clear_flags(&p, SUBTRACT);
-  int half_sum = (*r1 & 0xFF) + (r2 & 0xFF);
-  set_flag(&p, HALF_CARRY, half_sum >= 0x100);
+  int half_sum = (*r1 & 0xFFF) + (r2 & 0xFFF);
+  set_flag(&p, HALF_CARRY, half_sum >= 0x1000);
   int sum = *r1 + r2;
   set_flag(&p, CARRY, sum >= 0x10000);
 
