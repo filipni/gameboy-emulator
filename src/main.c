@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <string.h>
+#include <signal.h>
+#include <stdlib.h>
 #include "constants.h"
 #include "processor.h"
 #include "utils.h"
@@ -10,8 +12,16 @@
 #define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
 #define ROM_SIZE 32768
 
+void sig_handler(int signo)
+{
+  print_debug_info();
+  exit(0);
+}
+
 int main(int argc, char* argv[])
 {
+  signal(SIGINT, sig_handler);
+
   init_proc();
   init_memory();
 
