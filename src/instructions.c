@@ -1091,12 +1091,12 @@ int ADD_SP_r8()
 int ADD(uint8_t* r1, uint8_t r2, int carry)
 {
   clear_flags(&p, SUBTRACT);
-  int half_sum = (*r1 & 0x0F) + (r2 & 0x0F);
+  int half_sum = (*r1 & 0x0F) + (r2 & 0x0F) + carry;
   set_flag(&p, HALF_CARRY, half_sum >= 0x10);
-  int sum = *r1 + r2;
+  int sum = *r1 + r2 + carry;
   set_flag(&p, CARRY, sum >= 0x100);
 
-  *r1 = *r1 + r2;
+  *r1 = *r1 + r2 + carry;
   set_flag(&p, ZERO, !(*r1));
 
   p.pc++;
@@ -1139,7 +1139,7 @@ int SUB(uint8_t* r1, uint8_t r2, int carry)
 {
   set_flag(&p, SUBTRACT, 1);
   set_flag(&p, CARRY, r2 + carry > *r1);
-  set_flag(&p, HALF_CARRY, (r2 + carry & 0x0F) > (*r1 & 0x0F)  );
+  set_flag(&p, HALF_CARRY, ((r2 & 0x0F) + carry) > (*r1 & 0x0F));
 
   *r1 -= r2 + carry;
   set_flag(&p, ZERO, !(*r1));
