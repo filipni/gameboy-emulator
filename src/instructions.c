@@ -305,6 +305,9 @@ int SWAP(uint8_t* r)
 
   *r = (lower_nibble << 4) + upper_nibble;
 
+  clear_flags(&p, SUBTRACT | HALF_CARRY | CARRY);
+  set_flag(&p, ZERO, !(*r));
+
   p.pc += 2;
   return 8;
 }
