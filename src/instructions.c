@@ -1751,7 +1751,7 @@ op operations[NUM_OPS] = {
   ADD_A_H,          // 0x84
   ADD_A_L,          // 0x85
   ADD_A_mHL,        // 0x86
-  ADC_A_A,          // 0x87
+  ADD_A_A,          // 0x87
   ADC_A_B,          // 0x88
   ADC_A_C,          // 0x89
   ADC_A_D,          // 0x8a
