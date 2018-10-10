@@ -791,33 +791,6 @@ int LD_SP()
   return 12;
 }
 
-int LDHL_SP_r8()
-{
-  uint8_t d8 = read_from_mem(p.pc+1);
-  uint16_t res = p.sp + d8;
-
-  uint8_t is_negative = (d8 & 0x80);
-  if (is_negative)
-  {
-    set_flag(&p, HALF_CARRY, (res & 0x0F) <= (p.sp & 0x0F));
-    set_flag(&p, CARRY, (res & 0xFF) <= (p.sp & 0xFF));
-  }
-  else
-  {
-    int half_sum = (p.sp & 0x0F) + (d8 & 0x0F);
-    set_flag(&p, HALF_CARRY, half_sum >= 0x100);
-    int sum = (p.sp & 0xFF) + d8;
-    set_flag(&p, CARRY, sum >= 0x10000);
-  }
-
-  clear_flags(&p, ZERO | SUBTRACT);
-
-  p.hl.r16 = res;
-
-  p.pc += 2;
-  return 12;
-}
-
 int LD_reg_mem(uint8_t* reg, uint8_t* mem)
 {
   *reg = *mem;
@@ -1082,13 +1055,38 @@ int ADD_HL_BC() { return ADD_16bit(&p.hl.r16, p.bc.r16); }
 int ADD_HL_DE() { return ADD_16bit(&p.hl.r16, p.de.r16); }
 int ADD_HL_HL() { return ADD_16bit(&p.hl.r16, p.hl.r16); }
 int ADD_HL_SP() { return ADD_16bit(&p.hl.r16, p.sp); }
-int ADD_SP_r8()
+
+uint16_t ADD_SP()
 {
-  ADD_16bit(&p.sp, read_from_mem(p.pc+1));
+  clear_flags(&p, SUBTRACT);
   clear_flags(&p, ZERO);
 
-  p.pc++; // Already incremented once by call to ADD_16bit
+  // Calculate flags based on lower byte of SP and unsigned immediate value
+  uint16_t val = read_from_mem(p.pc+1);
+  int half_sum = (p.sp & 0xF) + (val & 0xF);
+  set_flag(&p, HALF_CARRY, half_sum >= 0x10);
+  int sum = (p.sp & 0xFF) + val;
+  set_flag(&p, CARRY, sum >= 0x100);
+
+  // The result is the addition of SP and the signed immediate value
+  if (val >= 0x80)
+    val |= 0xFF00; // Sign extension
+
+  return p.sp + val;
+
+  p.pc += 2;
+}
+
+int ADD_SP_r8()
+{
+  p.sp = ADD_SP();
   return 16;
+}
+
+int LDHL_SP_r8()
+{
+  p.hl.r16 = ADD_SP();
+  return 12;
 }
 
 int ADD(uint8_t* r1, uint8_t r2, int carry)
