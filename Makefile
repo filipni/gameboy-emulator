@@ -9,7 +9,7 @@ CFLAGS=-I$(IDIR)
 IDIR=./include
 
 ODIR=./obj
-_OBJ= main.o processor.o utils.o memory.o instructions.o
+_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(shell mkdir -p $(DIRS))
@@ -17,10 +17,13 @@ $(shell mkdir -p $(DIRS))
 $(BDIR)/gboy_emu: $(OBJ)
 	$(CC) $^ -o $@
 
-$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h
+$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/ppu.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h $(IDIR)/instructions.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(ODIR)/ppu.o: $(SDIR)/ppu.c $(IDIR)/ppu.h $(IDIR)/memory.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/memory.o: $(SDIR)/memory.c $(IDIR)/memory.h

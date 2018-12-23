@@ -6,6 +6,7 @@
 #include "processor.h"
 #include "utils.h"
 #include "memory.h"
+#include "ppu.h"
 
 #define ROM_FILE "roms/tetris.gb"
 #define TEST_ROM "roms/test.gb"

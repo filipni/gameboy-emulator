@@ -1,2 +1,2 @@
-// Memory map
+#define TILE_SIZE_BYTES 16
 
