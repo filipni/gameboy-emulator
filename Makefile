@@ -5,25 +5,28 @@ DIRS=bin obj
 SDIR=./src
 BDIR=./bin
 
-CFLAGS=-I$(IDIR)
+CFLAGS=-I$(IDIR) -ggdb
 IDIR=./include
 
 ODIR=./obj
-_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o
+_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o window.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(shell mkdir -p $(DIRS))
 
 $(BDIR)/gboy_emu: $(OBJ)
-	$(CC) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ -lSDL2
 
-$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/ppu.h
+$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/ppu.h $(IDIR)/window.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h $(IDIR)/instructions.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(ODIR)/ppu.o: $(SDIR)/ppu.c $(IDIR)/ppu.h $(IDIR)/memory.h
+$(ODIR)/ppu.o: $(SDIR)/ppu.c $(IDIR)/ppu.h $(IDIR)/memory.h $(IDIR)/window.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(ODIR)/window.o: $(SDIR)/window.c $(IDIR)/window.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/memory.o: $(SDIR)/memory.c $(IDIR)/memory.h

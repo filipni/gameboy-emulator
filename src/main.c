@@ -7,11 +7,15 @@
 #include "utils.h"
 #include "memory.h"
 #include "ppu.h"
+#include "window.h"
 
 #define ROM_FILE "roms/tetris.gb"
 #define TEST_ROM "roms/test.gb"
 #define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
 #define ROM_SIZE 32768
+
+int cycle_counter = 0;
+int v_counter = 0;
 
 void sig_handler(int signo)
 {
@@ -22,6 +26,7 @@ void sig_handler(int signo)
 int main(int argc, char* argv[])
 {
   signal(SIGINT, sig_handler);
+  create_window();
 
   init_proc();
   init_memory();
@@ -51,6 +56,21 @@ int main(int argc, char* argv[])
     */
 
     int res = run_operation();
+    cycle_counter += res;
+
+    if (cycle_counter >= 450)
+    {
+      cycle_counter = 0;
+      memory[0xFF44]++;
+    }
+
+    v_counter += res;
+    if (v_counter >= V_BLANK_CYCLES)
+    {
+      v_counter = 0;
+      memory[0xFF0F] = 1;
+      draw_map(0);
+    }
 
     if (res < 0)
     {

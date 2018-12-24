@@ -17,6 +17,13 @@
 #define INTERNAL_RAM        0xFF80
 #define INTER_ENABLE_REG    0xFFFF
 
+// Different sections in video ram
+#define TILE_SET_1          0x8000
+#define TILE_SET_SHARED     0x8800
+#define TILE_SET_0          0x9000
+#define TILE_MAP_0          0x9800
+#define TILE_MAP_1          0x9C00
+
 #define MEMORY_SIZE         0x10000
 
 uint8_t memory[MEMORY_SIZE];
