@@ -28,8 +28,9 @@ void print_debug_info()
   printf("H-carry: %x\n", test_flag(&p, HALF_CARRY));
   printf("Carry:   %x\n\n", test_flag(&p, CARRY));
 
-  printf("MEMORY LOCATIONS\n");
+  printf("INTERRUPTS\n");
   printf("----------------\n");
+  printf("IME: %x\n", p.interrupts_enabled);
   printf("IE: %02x\n", memory[IE_REG]);
   printf("IF: %02x\n\n", memory[IF_REG]);
 
@@ -47,17 +48,18 @@ void print_debug_info()
 
 int run_operation()
 {
-  int res = handle_interrupts();
-  if (res > 0)
-    return res;
+  int irq_handling_overhead = handle_interrupts();
 
+  int op_overhead = 0;
   uint8_t op_code = read_from_mem(p.pc);
   if (op_code == 0xcb)  // Check if op is from the prefix instruction set
   {
     op_code = read_from_mem(p.pc+1);
-    return prefix_operations[op_code](p);
+    op_overhead = prefix_operations[op_code](p);
   }
   else
-    return operations[op_code](p);
+    op_overhead = operations[op_code](p);
+
+  return irq_handling_overhead + op_overhead;
 }
 
