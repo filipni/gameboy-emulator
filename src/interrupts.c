@@ -1,4 +1,6 @@
 #include "interrupts.h"
+#include "processor.h"
+#include "memory.h"
 
 int ei_scheduled = 0;
 int di_scheduled = 0;

@@ -1,9 +1,7 @@
 #ifndef _IRQ_H
 #define _IRQ_H
 
-#include <stdio.h>
-#include "processor.h"
-#include "memory.h"
+#include <stdint.h>
 
 #define IF_REG 0xFF0F  // Interrupts Fired
 #define IE_REG 0xFFFF  // Interrupts Enabled
