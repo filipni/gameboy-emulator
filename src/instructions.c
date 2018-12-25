@@ -703,7 +703,7 @@ int LD_mC_A()
   uint16_t addr = generate_address(p.bc.r8.low, 0xFF);
   write_to_mem(addr, p.af.r8.high);
 
-  p.pc += 2;
+  p.pc += 1;
   return 8;
 }
 
@@ -712,7 +712,7 @@ int LD_A_mC()
   uint16_t addr = generate_address(p.bc.r8.low, 0xFF);
   p.af.r8.high = read_from_mem(addr);
 
-  p.pc += 2;
+  p.pc += 1;
   return 8;
 }
 
