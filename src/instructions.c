@@ -1,6 +1,7 @@
 #include "instructions.h"
 #include "utils.h"
 #include "memory.h"
+#include "interrupts.h"
 
 #include <stdio.h>
 
@@ -590,7 +591,7 @@ uint8_t calculate_carry(int v1, int v2)
 
 int DI()
 {
-  p.interrupts_enabled = 0;
+  pending_interrupts_disabled = 1;
 
   p.pc++;
   return 4;
@@ -598,7 +599,7 @@ int DI()
 
 int EI()
 {
-  p.interrupts_enabled = 1;
+  pending_interrupts_enabled = 1;
 
   p.pc++;
   return 4;
@@ -1075,9 +1076,8 @@ uint16_t ADD_SP()
   if (val >= 0x80)
     val |= 0xFF00; // Sign extension
 
-  return p.sp + val;
-
   p.pc += 2;
+  return p.sp + val;
 }
 
 int ADD_SP_r8()

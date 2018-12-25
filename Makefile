@@ -35,7 +35,7 @@ $(ODIR)/window.o: $(SDIR)/window.c $(IDIR)/window.h
 $(ODIR)/memory.o: $(SDIR)/memory.c $(IDIR)/memory.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(ODIR)/instructions.o: $(SDIR)/instructions.c $(IDIR)/instructions.h $(IDIR)/memory.h $(IDIR)/utils.h
+$(ODIR)/instructions.o: $(SDIR)/instructions.c $(IDIR)/instructions.h $(IDIR)/memory.h $(IDIR)/utils.h $(IDIR)/interrupts.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/utils.o: $(SDIR)/utils.c $(IDIR)/utils.h $(IDIR)/processor.h

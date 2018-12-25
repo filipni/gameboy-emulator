@@ -1,6 +1,7 @@
 #include "interrupts.h"
 
-int interrupts_truly_enabled = 0;
+int pending_interrupts_enabled = 0;
+int pending_interrupts_disabled = 0;
 
 int interrupt_allowed(uint8_t irq_mask)
 {
@@ -9,7 +10,7 @@ int interrupt_allowed(uint8_t irq_mask)
 
 int handle_interrupts()
 {
-  if (interrupts_truly_enabled && memory[IF_REG] != 0)
+  if (p.interrupts_enabled && memory[IF_REG] != 0)
   {
     p.interrupts_enabled = 0;
 
@@ -35,9 +36,16 @@ int handle_interrupts()
   }
 
   // Interupts are not enabled/disabled until the instruction after EI/DI is executed.
-  if (p.interrupts_enabled)
-    interrupts_truly_enabled = 1;
-  else
-    interrupts_truly_enabled = 0;
+  if (pending_interrupts_enabled)
+  {
+    p.interrupts_enabled = 1;
+    pending_interrupts_enabled = 0;
+  }
+  if (pending_interrupts_disabled)
+  {
+    p.interrupts_enabled = 0;
+    pending_interrupts_disabled = 0;
+  }
+
   return 0;
 }

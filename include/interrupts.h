@@ -20,6 +20,9 @@
 #define SERIAL_IRQ_VECTOR_ADDR 0x0058
 #define JOYPAD_IRQ_VECTOR_ADDR 0x0060
 
+int pending_interrupts_enabled;
+int pending_interrupts_disabled;
+
 int handle_interrupts();
 
 #endif

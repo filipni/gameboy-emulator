@@ -21,8 +21,6 @@ int v_counter = 0;
 void sig_handler(int signo)
 {
   print_debug_info();
-  draw_map(0);
-  SDL_Delay(2000);
   exit(0);
 }
 
@@ -72,6 +70,7 @@ int main(int argc, char* argv[])
     {
       v_counter = 0;
       memory[IF_REG] |= V_BLANK_MASK;
+      draw_map(0);
     }
 
     if (res < 0)
