@@ -1,13 +1,15 @@
 #include "interrupts.h"
 
+int interrupts_truly_enabled = 0;
+
 int interrupt_allowed(uint8_t irq_mask)
 {
   return memory[IF_REG] & irq_mask && memory[IE_REG] & irq_mask; 
 }
 
-void handle_interrupts()
+int handle_interrupts()
 {
-  if (p.interrupts_enabled && memory[IF_REG] != 0)
+  if (interrupts_truly_enabled && memory[IF_REG] != 0)
   {
     p.interrupts_enabled = 0;
 
@@ -16,8 +18,9 @@ void handle_interrupts()
     write_to_mem(p.sp-2, p.pc & 0xFF);           // Low byte
     p.sp -= 2;
     
-    if (interrupt_allowed(V_BLANK_MASK))
+    if (interrupt_allowed(V_BLANK_MASK)){
       p.pc = V_BLANK_IRQ_VECTOR_ADDR;
+    }
     else if (interrupt_allowed(LCDC_MASK))
       p.pc = LCDC_IRQ_VECTOR_ADDR;
     else if (interrupt_allowed(TIMER_MASK))
@@ -26,6 +29,15 @@ void handle_interrupts()
       p.pc = SERIAL_IRQ_VECTOR_ADDR;
     else if (interrupt_allowed(JOYPAD_MASK))
       p.pc = JOYPAD_IRQ_VECTOR_ADDR;
+
+    memory[IF_REG] = 0;  // Need to check if this really should be reset here...
+    return 12;
   }
-  memory[IF_REG] = 0;
+
+  // Interupts are not enabled/disabled until the instruction after EI/DI is executed.
+  if (p.interrupts_enabled)
+    interrupts_truly_enabled = 1;
+  else
+    interrupts_truly_enabled = 0;
+  return 0;
 }

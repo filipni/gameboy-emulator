@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include "processor.h"
 #include "memory.h"
-#include "utils.h"
 
 #define IF_REG 0xFF0F
 #define IE_REG 0xFFFF
@@ -21,6 +20,6 @@
 #define SERIAL_IRQ_VECTOR_ADDR 0x0058
 #define JOYPAD_IRQ_VECTOR_ADDR 0x0060
 
-void handle_interrupts();
+int handle_interrupts();
 
 #endif

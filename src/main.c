@@ -8,6 +8,7 @@
 #include "memory.h"
 #include "ppu.h"
 #include "window.h"
+#include "interrupts.h"
 
 #define ROM_FILE "roms/tetris.gb"
 #define TEST_ROM "roms/test.gb"
@@ -20,6 +21,8 @@ int v_counter = 0;
 void sig_handler(int signo)
 {
   print_debug_info();
+  draw_map(0);
+  SDL_Delay(2000);
   exit(0);
 }
 
@@ -68,8 +71,7 @@ int main(int argc, char* argv[])
     if (v_counter >= V_BLANK_CYCLES)
     {
       v_counter = 0;
-      memory[0xFF0F] = 1;
-      draw_map(0);
+      memory[IF_REG] |= V_BLANK_MASK;
     }
 
     if (res < 0)

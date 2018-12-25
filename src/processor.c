@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "memory.h"
 #include "instructions.h"
+#include "interrupts.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -14,6 +15,8 @@ void init_proc()
   p.hl.r16 = 0x014D;
   p.sp = 0xFFFE;
   p.pc = 0x0100;
+
+  p.interrupts_enabled = 0;
 }
 
 void print_debug_info()
@@ -24,6 +27,11 @@ void print_debug_info()
   printf("Sub:     %x\n", test_flag(&p, SUBTRACT));
   printf("H-carry: %x\n", test_flag(&p, HALF_CARRY));
   printf("Carry:   %x\n\n", test_flag(&p, CARRY));
+
+  printf("MEMORY LOCATIONS\n");
+  printf("----------------\n");
+  printf("IE: %02x\n", memory[IE_REG]);
+  printf("IF: %02x\n\n", memory[IF_REG]);
 
   printf("REGISTERS\n");
   printf("---------\n");
@@ -39,9 +47,12 @@ void print_debug_info()
 
 int run_operation()
 {
+  int res = handle_interrupts();
+  if (res > 0)
+    return res;
+
   uint8_t op_code = read_from_mem(p.pc);
-  // Check if op is from the prefix instruction set
-  if (op_code == 0xcb)
+  if (op_code == 0xcb)  // Check if op is from the prefix instruction set
   {
     op_code = read_from_mem(p.pc+1);
     return prefix_operations[op_code](p);
