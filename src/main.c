@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
     if (v_counter >= V_BLANK_CYCLES)
     {
       v_counter = 0;
-      memory[IF_REG] |= V_BLANK_MASK;
+      memory[IF_REG] |= 1;
       draw_map(0);
     }
 
