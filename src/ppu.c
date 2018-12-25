@@ -1,28 +1,14 @@
 #include "ppu.h"
+#include "memory.h"
+#include "constants.h"
+#include "window.h"
 
-uint8_t WHITE_RGB[] = {155, 188, 15};
-uint8_t LIGHT_GREY_RGB[] = {139, 172, 15};
-uint8_t DARK_GREY_RGB[] = {48, 98, 48};
-uint8_t BLACK_RGB[] = {15, 56, 15};
+uint8_t WHITE[] = {155, 188, 15};
+uint8_t LIGHT_GREY[] = {139, 172, 15};
+uint8_t DARK_GREY[] = {48, 98, 48};
+uint8_t BLACK[] = {15, 56, 15};
 
-void set_pixel_color(uint8_t color_index)
-{
-  switch (color_index)
-  {
-    case 0:
-      set_draw_color(WHITE_RGB);
-      break;
-    case 1:
-      set_draw_color(LIGHT_GREY_RGB);
-      break;
-    case 2:
-      set_draw_color(DARK_GREY_RGB);
-      break;
-    case 3:
-      set_draw_color(BLACK_RGB);
-      break;
-  }
-}
+uint8_t* RGB_VALUES[] = {WHITE, LIGHT_GREY, DARK_GREY, BLACK};
 
 void draw_tile(uint8_t index, int x, int y)
 {
@@ -40,7 +26,7 @@ void draw_tile(uint8_t index, int x, int y)
 
       uint8_t color_index = high_bit | low_bit;
 
-      set_pixel_color(color_index);
+      set_draw_color(RGB_VALUES[color_index]);
       draw_point(x + 7 - j, y + i/2);  // 7 - j, so that we draw the high bits before the lower ones.
     }
   }
