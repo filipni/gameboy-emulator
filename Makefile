@@ -9,7 +9,7 @@ CFLAGS=-I$(IDIR) -ggdb
 IDIR=./include
 
 ODIR=./obj
-_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o window.o
+_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o window.o interrupts.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(shell mkdir -p $(DIRS))
@@ -24,6 +24,9 @@ $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h $(I
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/ppu.o: $(SDIR)/ppu.c $(IDIR)/ppu.h $(IDIR)/memory.h $(IDIR)/window.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(ODIR)/interrupts.o: $(SDIR)/interrupts.c $(IDIR)/interrupts.h $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/utils.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/window.o: $(SDIR)/window.c $(IDIR)/window.h
