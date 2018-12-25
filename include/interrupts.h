@@ -14,15 +14,12 @@
 #define SERIAL_MASK   0x08 
 #define JOYPAD_MASK   0x10 
 
-#define V_BLANK_IRQ_VECTOR_ADDR 0x0040
-#define LCDC_IRQ_VECTOR_ADDR 0x0048
-#define TIMER_IRQ_VECTOR_ADDR 0x0050
-#define SERIAL_IRQ_VECTOR_ADDR 0x0058
-#define JOYPAD_IRQ_VECTOR_ADDR 0x0060
+#define IRQ_VEC_BASE_ADDR 0x0040
 
-int pending_interrupts_enabled;
-int pending_interrupts_disabled;
+int ei_scheduled;
+int di_scheduled;
 
-int handle_interrupts();
+int irq_handling();
+int call_irq_routine(uint8_t);
 
 #endif

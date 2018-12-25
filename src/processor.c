@@ -48,7 +48,7 @@ void print_debug_info()
 
 int run_operation()
 {
-  int irq_handling_overhead = handle_interrupts();
+  int irq_handling_overhead = irq_handling();
 
   int op_overhead = 0;
   uint8_t op_code = read_from_mem(p.pc);

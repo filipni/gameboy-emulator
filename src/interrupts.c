@@ -1,61 +1,44 @@
 #include "interrupts.h"
 
-int pending_interrupts_enabled = 0;
-int pending_interrupts_disabled = 0;
+int ei_scheduled = 0;
+int di_scheduled = 0;
 
-int handle_interrupts()
+int call_irq_routine(uint8_t irq_num)
 {
-  uint8_t interrupts_to_handle = memory[IF_REG] & memory[IE_REG];
-  int irq_handling_overhead = 0;
-  if (p.interrupts_enabled && interrupts_to_handle)
-  {
     p.interrupts_enabled = 0;
 
-    // Push pc to stack
+    // Push pc to stack.
     write_to_mem(p.sp-1, (p.pc & 0xFF00) >> 8);  // High byte
     write_to_mem(p.sp-2, p.pc & 0xFF);           // Low byte
     p.sp -= 2;
-    
-    if (interrupts_to_handle & V_BLANK_MASK)
-    {
-      memory[IF_REG] &= ~V_BLANK_MASK;
-      p.pc = V_BLANK_IRQ_VECTOR_ADDR;
-    }
-    else if (interrupts_to_handle & LCDC_MASK)
-    {
-      memory[IF_REG] &= ~LCDC_MASK;
-      p.pc = LCDC_IRQ_VECTOR_ADDR;
-    }
-    else if (interrupts_to_handle & TIMER_MASK)
-    {
-      memory[IF_REG] &= ~TIMER_MASK;
-      p.pc = TIMER_IRQ_VECTOR_ADDR;
-    }
-    else if (interrupts_to_handle & SERIAL_MASK)
-    {
-      memory[IF_REG] &= ~SERIAL_MASK;
-      p.pc = SERIAL_IRQ_VECTOR_ADDR;
-    }
-    else if (interrupts_to_handle & JOYPAD_MASK)
-    {
-      memory[IF_REG] &= ~JOYPAD_MASK;
-      p.pc = JOYPAD_IRQ_VECTOR_ADDR;
-    }
 
-    irq_handling_overhead = 12;
+    // Clear interrupt and jumb to subroutine.
+    memory[IF_REG] &= ~(1 << irq_num);
+    p.pc = IRQ_VEC_BASE_ADDR + 8 * irq_num;
+
+    return 12;
+}
+
+int irq_handling()
+{
+  int irq_handling_overhead = 0;
+
+  uint8_t irqs_to_handle = memory[IF_REG] & memory[IE_REG];
+  if (p.interrupts_enabled && irqs_to_handle)
+  {
+    uint8_t irq_num = 0;
+    while ((1 << irq_num & irqs_to_handle) == 0)
+      irq_num++;
+    irq_handling_overhead += call_irq_routine(irq_num);
   }
 
   // Interupts are not enabled/disabled until the instruction after EI/DI is executed.
-  if (pending_interrupts_enabled)
-  {
+  if (ei_scheduled)
     p.interrupts_enabled = 1;
-    pending_interrupts_enabled = 0;
-  }
-  if (pending_interrupts_disabled)
-  {
+  if (di_scheduled)
     p.interrupts_enabled = 0;
-    pending_interrupts_disabled = 0;
-  }
+  ei_scheduled = di_scheduled = 0;
 
   return irq_handling_overhead;
 }
+

@@ -591,7 +591,7 @@ uint8_t calculate_carry(int v1, int v2)
 
 int DI()
 {
-  pending_interrupts_disabled = 1;
+  di_scheduled = 1;
 
   p.pc++;
   return 4;
@@ -599,7 +599,7 @@ int DI()
 
 int EI()
 {
-  pending_interrupts_enabled = 1;
+  ei_scheduled = 1;
 
   p.pc++;
   return 4;
