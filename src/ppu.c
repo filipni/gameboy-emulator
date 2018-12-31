@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "constants.h"
 #include "window.h"
+#include <stdio.h>
 
 uint8_t WHITE[] = {155, 188, 15};
 uint8_t LIGHT_GREY[] = {139, 172, 15};
@@ -32,22 +33,25 @@ void draw_tile(uint8_t index, int x, int y)
   }
 }
 
-int draw_map(int map_index)
+int draw_window(int map_index)
 {
+  drawing_init();
   if (map_index < 0 || map_index > 1)
     return -1;
 
   uint16_t map_address = map_index ? TILE_MAP_1 : TILE_MAP_0;
 
   // Each map is 32x32 bytes.
-  for (int i = 0; i < 32; i++)
+  for (int row = 0; row < 32; row++)
   {
-    for (int j = 0; j < 32; j++)
+    for (int column = 0; column < 32; column++)
     {
-      int tile_index = memory[map_address + i + j*32];  // The maps are saved column by column in memory, so each row element is offset with 32 bytes.
-      draw_tile(tile_index, i*8, j*8);  // Each tile is 8x8 bits.
+      int tile_index = memory[map_address + row*32 + column];
+      draw_tile(tile_index, column*8, row*8);  // Each tile is 8x8 bits.
     }
   }
+
+  set_offset(memory[SCX_REG], memory[SCY_REG]);
 
   drawing_done();
   return 0;

@@ -4,9 +4,11 @@
 #include <stdint.h>
 
 void create_window();
+void drawing_init();
+void drawing_done();
 void set_draw_color(uint8_t* color_rgb);
 void draw_point(int, int);
-void drawing_done();
+void set_offset(int, int);
 
 #endif
 

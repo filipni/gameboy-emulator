@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "constants.h"
 
+#define MEMORY_SIZE         0x10000
+
 #define ROM_BANK_O          0x0
 #define SWITCHABLE_ROM_BANK 0x4000
 #define VIDEO_RAM           0x8000
@@ -23,8 +25,6 @@
 #define TILE_SET_0          0x9000
 #define TILE_MAP_0          0x9800
 #define TILE_MAP_1          0x9C00
-
-#define MEMORY_SIZE         0x10000
 
 uint8_t memory[MEMORY_SIZE];
 
