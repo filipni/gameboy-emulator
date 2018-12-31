@@ -41,6 +41,7 @@ int main(int argc, char* argv[])
   // Main loop
   while (1)
   {
+    /*
     if ((p.pc == breakpoint) || step_enabled)
     {
       print_debug_info();
@@ -54,6 +55,7 @@ int main(int argc, char* argv[])
       else
         step_enabled = 1;
     }
+    */
 
     int res = run_operation();
     cycle_counter += res;

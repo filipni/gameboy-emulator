@@ -10,7 +10,7 @@ int not_implemented() { return -1; }
 int STOP()
 {
   // STOP is not implemented yet...
-  p.pc++;
+  p.pc += 2;
   return 4;
 }
 
