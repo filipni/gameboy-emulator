@@ -9,7 +9,7 @@ CFLAGS=-I$(IDIR) -ggdb
 IDIR=./include
 
 ODIR=./obj
-_OBJ= main.o processor.o utils.o memory.o instructions.o ppu.o display.o interrupts.o
+_OBJ= main.o processor.o utils.o memory.o instructions.o display.o interrupts.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(shell mkdir -p $(DIRS))
@@ -17,13 +17,10 @@ $(shell mkdir -p $(DIRS))
 $(BDIR)/gboy_emu: $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ -lSDL2
 
-$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/ppu.h $(IDIR)/display.h $(IDIR)/interrupts.h
+$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/display.h $(IDIR)/interrupts.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h $(IDIR)/instructions.h $(IDIR)/interrupts.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(ODIR)/ppu.o: $(SDIR)/ppu.c $(IDIR)/ppu.h $(IDIR)/memory.h $(IDIR)/display.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/interrupts.o: $(SDIR)/interrupts.c $(IDIR)/interrupts.h $(IDIR)/processor.h $(IDIR)/memory.h

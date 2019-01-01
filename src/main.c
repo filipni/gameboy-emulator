@@ -5,7 +5,6 @@
 #include "processor.h"
 #include "utils.h"
 #include "memory.h"
-#include "ppu.h"
 #include "display.h"
 #include "interrupts.h"
 #include <SDL2/SDL.h>
@@ -31,7 +30,7 @@ void sig_handler(int signo)
 int main(int argc, char* argv[])
 {
   signal(SIGINT, sig_handler);
-  create_window();
+  create_display();
 
   init_proc();
   init_memory();
@@ -84,7 +83,7 @@ int main(int argc, char* argv[])
       cycle_counter = 0;
       memory[IF_REG] |= 1;
 
-      draw_window(0);
+      draw_to_display(0);
       SDL_Delay(15);
     }
 
