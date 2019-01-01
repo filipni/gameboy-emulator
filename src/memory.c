@@ -46,6 +46,10 @@ void load_rom(char* filename, int size)
 
 uint8_t read_from_mem(uint16_t addr)
 {
+  // Emulates pull-up on joypad register
+  if (addr == 0xFF00)
+    return 0x0F;
+
   return memory[addr];
 }
 
