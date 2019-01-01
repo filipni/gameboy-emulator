@@ -9,12 +9,21 @@
 
 void init_proc()
 {
+  /*
   p.af.r16 = 0x01B0;
   p.bc.r16 = 0x0013;
   p.de.r16 = 0x00D8;
   p.hl.r16 = 0x014D;
   p.sp = 0xFFFE;
   p.pc = 0x0100;
+  */
+
+  p.af.r16 = 0x0;
+  p.bc.r16 = 0x0;
+  p.de.r16 = 0x0;
+  p.hl.r16 = 0x0;
+  p.sp = 0x0;
+  p.pc = 0x0;
 
   p.interrupts_enabled = 0;
 }

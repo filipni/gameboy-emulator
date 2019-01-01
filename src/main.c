@@ -34,12 +34,16 @@ int main(int argc, char* argv[])
   init_memory();
 
   load_rom(ROM_FILE, ROM_SIZE);
+  load_rom(BOOTSTRAP_FILE, BOOTSTRAP_SIZE);
 
   int breakpoint = 0x100;
   int step_enabled = 0;
 
+  SDL_Event e;
+  int quit = 0;
+
   // Main loop
-  while (1)
+  while (!quit)
   {
     /*
     if ((p.pc == breakpoint) || step_enabled)
@@ -56,6 +60,15 @@ int main(int argc, char* argv[])
         step_enabled = 1;
     }
     */
+
+    while (SDL_PollEvent(&e) != 0)
+    {
+      if (e.type == SDL_QUIT)
+        quit = 1;
+    }
+
+    if (p.pc == 0x100)
+      load_rom(ROM_FILE, ROM_SIZE);
 
     int res = run_operation();
     cycle_counter += res;
