@@ -16,8 +16,10 @@
 #define BOOTSTRAP_SIZE 0x100
 
 #define CPU_SPEED_HZ 4190000
-#define V_BLANK_HZ 59.73
-#define V_BLANK_CYCLES CPU_SPEED_HZ / V_BLANK_HZ
+#define CYCLE_TIME_MS 1000 / CPU_SPEED_HZ
+#define VBLANK_HZ 59.73
+#define VBLANK_CYCLES CPU_SPEED_HZ / VBLANK_HZ
+#define VBLANK_TIME_MS VBLANK_CYCLES * CYCLE_TIME_MS
 
 int cycle_counter = 0;
 
@@ -38,8 +40,10 @@ int main(int argc, char* argv[])
   load_rom(ROM_FILE, ROM_SIZE);
   load_rom(BOOTSTRAP_FILE, BOOTSTRAP_SIZE);
 
+  #ifdef DEBUG
   int breakpoint = 0x100;
   int step_enabled = 0;
+  #endif
 
   SDL_Event e;
   int quit = 0;
@@ -47,7 +51,13 @@ int main(int argc, char* argv[])
   // Main loop
   while (!quit)
   {
-    /*
+    while (SDL_PollEvent(&e) != 0)
+    {
+      if (e.type == SDL_QUIT)
+        quit = 1;
+    }
+
+    #ifdef DEBUG
     if ((p.pc == breakpoint) || step_enabled)
     {
       print_debug_info();
@@ -61,30 +71,24 @@ int main(int argc, char* argv[])
       else
         step_enabled = 1;
     }
-    */
+    #endif
 
-    while (SDL_PollEvent(&e) != 0)
-    {
-      if (e.type == SDL_QUIT)
-        quit = 1;
-    }
-
+    // If pc is 0x100, the bootstrap code is done and we can reload the full game into memory
     if (p.pc == 0x100)
       load_rom(ROM_FILE, ROM_SIZE);
 
     int res = run_operation();
     cycle_counter += res;
 
-
+    // Some dummy code for incrementing the LY register
     memory[0xFF44]++;
 
-    if (cycle_counter >= V_BLANK_CYCLES)
+    if (cycle_counter >= VBLANK_CYCLES)
     {
       cycle_counter = 0;
       memory[IF_REG] |= 1;
-
       draw_to_display(0);
-      SDL_Delay(15);
+      SDL_Delay(VBLANK_TIME_MS);
     }
 
     if (res < 0)
@@ -98,3 +102,4 @@ int main(int argc, char* argv[])
 
   return 0;
 }
+
