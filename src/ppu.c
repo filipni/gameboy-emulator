@@ -1,7 +1,7 @@
 #include "ppu.h"
 #include "memory.h"
 #include "constants.h"
-#include "window.h"
+#include "display.h"
 #include <stdio.h>
 
 uint8_t WHITE[] = {155, 188, 15};

@@ -7,7 +7,7 @@
 #include "utils.h"
 #include "memory.h"
 #include "ppu.h"
-#include "window.h"
+#include "display.h"
 #include "interrupts.h"
 #include <SDL2/SDL.h>
 

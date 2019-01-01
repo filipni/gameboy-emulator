@@ -14,7 +14,7 @@ int call_irq_routine(uint8_t irq_num)
     write_to_mem(p.sp-2, p.pc & 0xFF);           // Low byte
     p.sp -= 2;
 
-    // Clear interrupt and jumb to subroutine.
+    // Clear interrupt and jump to subroutine.
     memory[IF_REG] &= ~(1 << irq_num);
     p.pc = IRQ_VEC_BASE_ADDR + 8 * irq_num;
 
