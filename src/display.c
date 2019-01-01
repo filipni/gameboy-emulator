@@ -34,7 +34,7 @@ void drawing_init()
   SDL_RenderClear(tile_map_renderer);
 }
 
-void set_draw_color(uint8_t* color_rgb)
+void set_draw_color(const uint8_t* color_rgb)
 {
   SDL_SetRenderDrawColor(tile_map_renderer, color_rgb[0], color_rgb[1], color_rgb[2], 255);
 }

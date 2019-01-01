@@ -4,14 +4,21 @@
 #include "display.h"
 #include <stdio.h>
 
-uint8_t WHITE[] = {155, 188, 15};
-uint8_t LIGHT_GREY[] = {139, 172, 15};
-uint8_t DARK_GREY[] = {48, 98, 48};
-uint8_t BLACK[] = {15, 56, 15};
+#define SCX_REG 0xff43
+#define SCY_REG 0xff42
+#define LY_REG 0xff44
 
-uint8_t* RGB_VALUES[] = {WHITE, LIGHT_GREY, DARK_GREY, BLACK};
+#define NUM_ROWS 32
+#define NUM_COLS 32
 
-void draw_tile(uint8_t index, int x, int y)
+const uint8_t WHITE[] = {155, 188, 15};
+const uint8_t LIGHT_GREY[] = {139, 172, 15};
+const uint8_t DARK_GREY[] = {48, 98, 48};
+const uint8_t BLACK[] = {15, 56, 15};
+
+const uint8_t* RGB_VALUES[] = {WHITE, LIGHT_GREY, DARK_GREY, BLACK};
+
+static void draw_tile(uint8_t index, int x, int y)
 {
   uint16_t tile_address = VIDEO_RAM + index * TILE_SIZE_BYTES;
   for (int i = 0; i < TILE_SIZE_BYTES; i += 2)
@@ -41,12 +48,11 @@ int draw_window(int map_index)
 
   uint16_t map_address = map_index ? TILE_MAP_1 : TILE_MAP_0;
 
-  // Each map is 32x32 bytes.
-  for (int row = 0; row < 32; row++)
+  for (int row = 0; row < NUM_ROWS; row++)
   {
-    for (int column = 0; column < 32; column++)
+    for (int column = 0; column < NUM_COLS; column++)
     {
-      int tile_index = memory[map_address + row*32 + column];
+      int tile_index = memory[map_address + row * NUM_COLS + column];
       draw_tile(tile_index, column*8, row*8);  // Each tile is 8x8 bits.
     }
   }
