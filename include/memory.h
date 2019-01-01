@@ -2,7 +2,6 @@
 #define _MEM_H
 
 #include <stdint.h>
-#include "constants.h"
 
 #define MEMORY_SIZE         0x10000
 

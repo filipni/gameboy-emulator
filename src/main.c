@@ -2,7 +2,6 @@
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
-#include "constants.h"
 #include "processor.h"
 #include "utils.h"
 #include "memory.h"
@@ -16,6 +15,10 @@
 #define BOOTSTRAP_FILE "roms/DMG_ROM.bin"
 #define ROM_SIZE 0x8000
 #define BOOTSTRAP_SIZE 0x100
+
+#define CPU_SPEED_HZ 4190000
+#define V_BLANK_HZ 59.73
+#define V_BLANK_CYCLES CPU_SPEED_HZ / V_BLANK_HZ
 
 int cycle_counter = 0;
 

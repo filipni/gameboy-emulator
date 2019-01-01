@@ -1,6 +1,5 @@
 #include "ppu.h"
 #include "memory.h"
-#include "constants.h"
 #include "display.h"
 #include <stdio.h>
 
@@ -10,6 +9,7 @@
 
 #define NUM_ROWS 32
 #define NUM_COLS 32
+#define TILE_SIZE_BYTES 16
 
 const uint8_t WHITE[] = {155, 188, 15};
 const uint8_t LIGHT_GREY[] = {139, 172, 15};
