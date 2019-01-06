@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "memory.h"
 
 void init_memory()
@@ -55,10 +56,13 @@ uint8_t read_from_mem(uint16_t addr)
 
 void write_to_mem(uint16_t addr, uint8_t data)
 {
+  // Serial
   if (addr == 0xFF02 && data == 0x81)
-  {
     printf("%c", read_from_mem(0xFF01));
-  }
+
+  // DMA
+  if (addr == 0xFF46)
+    memcpy(&memory[SPRITE_ATTRIB_MEM], &memory[data << 8], 160);  // Copy 40 sprites, each with a size of 4 bytes
 
   memory[addr] = data;
 }

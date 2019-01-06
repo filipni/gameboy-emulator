@@ -27,6 +27,44 @@ const uint8_t* RGB_VALUES[] = {WHITE, LIGHT_GREY, DARK_GREY, BLACK};
 #define TILE_MAP_WIDTH_BYTES TILE_MAP_WIDTH_PIXELS / 8
 #define TILE_MAP_HEIGHT_BYTES TILE_MAP_HEIGHT_PIXELS / 8
 
+#define NUM_SPRITES 40
+#define SPRITE_ATTRIB_SIZE 4
+
+typedef struct
+{
+  uint8_t y_pos;
+  uint8_t x_pos;
+  uint8_t tile_number;
+  uint8_t options;
+} object;
+
+int draw_background(int map_index)
+{
+  if (map_index < 0 || map_index > 1)
+    return -1;
+  uint16_t map_address = map_index ? TILE_MAP_1 : TILE_MAP_0;
+
+  for (int row = 0; row < TILE_MAP_HEIGHT_BYTES; row++)
+  {
+    for (int column = 0; column < TILE_MAP_WIDTH_BYTES; column++)
+    {
+      int tile_index = memory[map_address + row * TILE_MAP_WIDTH_BYTES + column];
+      draw_tile(tile_index, column*8, row*8);  // Each tile is 8x8 bits.
+    }
+  }
+}
+
+void draw_sprites()
+{
+  for (int i = 0; i < NUM_SPRITES; i++)
+  {
+    object* obj = (object*) &memory[SPRITE_ATTRIB_MEM + SPRITE_ATTRIB_SIZE * i];
+    int x = obj->x_pos - 8 + memory[SCX_REG];
+    int y = obj->y_pos - 16 + memory[SCY_REG];
+    draw_tile(obj->tile_number, x, y);
+  }
+}
+
 void create_display()
 {
   SDL_Init(SDL_INIT_VIDEO);
@@ -74,19 +112,9 @@ int draw_to_display(int map_index)
   SDL_SetRenderDrawColor(tile_map_renderer, 0, 0, 0, 255);
   SDL_RenderClear(tile_map_renderer);
 
-  if (map_index < 0 || map_index > 1)
+  if (draw_background(map_index) == -1)
     return -1;
-
-  uint16_t map_address = map_index ? TILE_MAP_1 : TILE_MAP_0;
-
-  for (int row = 0; row < TILE_MAP_HEIGHT_BYTES; row++)
-  {
-    for (int column = 0; column < TILE_MAP_WIDTH_BYTES; column++)
-    {
-      int tile_index = memory[map_address + row * TILE_MAP_WIDTH_BYTES + column];
-      draw_tile(tile_index, column*8, row*8);  // Each tile is 8x8 bits.
-    }
-  }
+  draw_sprites();
 
   // Crop tile map to fit display
   SDL_Rect rect = {memory[SCX_REG], memory[SCY_REG], DISPLAY_WIDTH, DISPLAY_HEIGHT};
