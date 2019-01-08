@@ -2,6 +2,8 @@
 #include <string.h>
 #include "input.h"
 #include "memory.h"
+#include "stdlib.h"
+#include "time.h"
 
 void init_memory()
 {
@@ -48,6 +50,10 @@ void load_rom(char* filename, int size)
 
 uint8_t read_from_mem(uint16_t addr)
 {
+  // Timer (at the moment just a random value to be able to run Tetris)
+  if (addr == 0xFF04)
+    return (uint8_t) rand();
+
   return memory[addr];
 }
 
@@ -61,6 +67,7 @@ void write_to_mem(uint16_t addr, uint8_t data)
   if (addr == 0xFF46)
     memcpy(&memory[SPRITE_ATTRIB_MEM], &memory[data << 8], 160);  // Copy 40 sprites, each with a size of 4 bytes
 
+  // Joypad
   if (addr == 0xFF00)
   {
     if (data == 0x10)

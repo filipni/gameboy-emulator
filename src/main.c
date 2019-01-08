@@ -8,6 +8,8 @@
 #include "display.h"
 #include "interrupts.h"
 #include "input.h"
+#include "stdlib.h"
+#include "time.h"
 #include <SDL2/SDL.h>
 
 #define ROM_FILE "roms/tetris.gb"
@@ -40,6 +42,8 @@ int main(int argc, char* argv[])
 
   load_rom(ROM_FILE, ROM_SIZE);
   load_rom(BOOTSTRAP_FILE, BOOTSTRAP_SIZE);
+
+  srand(time(0));
 
   #ifdef DEBUG
   int breakpoint = 0x100;
