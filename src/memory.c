@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include "input.h"
 #include "memory.h"
 
 void init_memory()
@@ -47,10 +48,6 @@ void load_rom(char* filename, int size)
 
 uint8_t read_from_mem(uint16_t addr)
 {
-  // Emulates pull-up on joypad register
-  if (addr == 0xFF00)
-    return 0x0F;
-
   return memory[addr];
 }
 
@@ -64,6 +61,14 @@ void write_to_mem(uint16_t addr, uint8_t data)
   if (addr == 0xFF46)
     memcpy(&memory[SPRITE_ATTRIB_MEM], &memory[data << 8], 160);  // Copy 40 sprites, each with a size of 4 bytes
 
+  if (addr == 0xFF00)
+  {
+    if (data == 0x10)
+      data |= create_joypad_reg_value(joypad_column_1);
+    else if (data == 0x20)
+      data |= create_joypad_reg_value(joypad_column_2);
+  }
+
   memory[addr] = data;
 }
 
@@ -71,3 +76,4 @@ uint8_t* get_mem_ref(uint16_t addr)
 {
   return &memory[addr];
 }
+

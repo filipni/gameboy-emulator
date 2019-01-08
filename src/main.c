@@ -7,6 +7,7 @@
 #include "memory.h"
 #include "display.h"
 #include "interrupts.h"
+#include "input.h"
 #include <SDL2/SDL.h>
 
 #define ROM_FILE "roms/tetris.gb"
@@ -55,6 +56,8 @@ int main(int argc, char* argv[])
     {
       if (e.type == SDL_QUIT)
         quit = 1;
+      else if (e.type == SDL_KEYDOWN || e.type == SDL_KEYUP)
+        handle_keyboard_input(&e);
     }
 
     #ifdef DEBUG

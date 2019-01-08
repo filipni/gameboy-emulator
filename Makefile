@@ -9,7 +9,7 @@ CFLAGS=-I$(IDIR) -ggdb
 IDIR=./include
 
 ODIR=./obj
-_OBJ= main.o processor.o utils.o memory.o instructions.o display.o interrupts.o
+_OBJ= main.o processor.o utils.o memory.o instructions.o display.o interrupts.o input.o
 OBJ= $(patsubst %, $(ODIR)/%, $(_OBJ))
 
 $(shell mkdir -p $(DIRS))
@@ -17,7 +17,7 @@ $(shell mkdir -p $(DIRS))
 $(BDIR)/gboy_emu: $(OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ -lSDL2
 
-$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/display.h $(IDIR)/interrupts.h
+$(ODIR)/main.o: $(SDIR)/main.c $(IDIR)/processor.h $(IDIR)/memory.h $(IDIR)/display.h $(IDIR)/interrupts.h $(IDIR)/input.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/processor.o: $(SDIR)/processor.c $(IDIR)/processor.h $(IDIR)/utils.h $(IDIR)/instructions.h $(IDIR)/interrupts.h
@@ -30,6 +30,9 @@ $(ODIR)/display.o: $(SDIR)/display.c $(IDIR)/display.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/memory.o: $(SDIR)/memory.c $(IDIR)/memory.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(ODIR)/input.o: $(SDIR)/input.c $(IDIR)/input.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(ODIR)/instructions.o: $(SDIR)/instructions.c $(IDIR)/instructions.h $(IDIR)/memory.h $(IDIR)/utils.h $(IDIR)/interrupts.h
